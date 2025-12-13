@@ -14,6 +14,7 @@ import 'package:matzo/domain/usecases/category/delete_category.dart';
 import 'package:matzo/domain/usecases/category/get_categories.dart';
 import 'package:matzo/domain/usecases/category/get_category_item_count.dart';
 import 'package:matzo/domain/usecases/category/reorder_categories.dart';
+import 'package:matzo/domain/usecases/category/update_category_protection.dart';
 import 'package:matzo/domain/usecases/todo_item/add_todo_item.dart';
 import 'package:matzo/domain/usecases/todo_item/delete_todo_item.dart';
 import 'package:matzo/domain/usecases/todo_item/edit_todo_item.dart';
@@ -60,6 +61,7 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton(() => DeleteCategory(getIt()));
   getIt.registerLazySingleton(() => GetCategoryItemCount(getIt()));
   getIt.registerLazySingleton(() => ReorderCategories(getIt()));
+  getIt.registerLazySingleton(() => UpdateCategoryProtection(getIt()));
 
   getIt.registerLazySingleton(() => GetTodoItems(getIt()));
   getIt.registerLazySingleton(() => AddTodoItem(getIt()));

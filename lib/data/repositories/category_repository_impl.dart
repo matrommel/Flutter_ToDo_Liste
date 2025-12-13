@@ -41,4 +41,9 @@ class CategoryRepositoryImpl implements CategoryRepository {
   Future<int> getCategoryItemCount(int categoryId) async {
     return await localDataSource.getCategoryItemCount(categoryId);
   }
+
+  @override
+  Future<void> updateCategoryProtection(int categoryId, bool isProtected) async {
+    await localDataSource.updateCategoryProtection(categoryId, isProtected);
+  }
 }

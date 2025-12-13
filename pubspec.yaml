@@ -23,12 +23,16 @@ dependencies:
   # Local Storage
   shared_preferences: ^2.2.2
   
+  # Biometric Authentication
+  local_auth: ^2.2.0
+  
   # Dependency Injection
   get_it: ^7.6.4
   
   # UI
   flutter_slidable: ^3.0.0
   reorderable_grid_view: ^2.2.8
+  confetti: ^0.7.0
   
   # Utilities
   intl: ^0.18.1

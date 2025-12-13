@@ -9,6 +9,7 @@ class Category extends Equatable {
   final DateTime createdAt;
   final int order;
   final int? iconCodePoint;
+  final bool isProtected; // Biometrischer Schutz aktiviert
 
   const Category({
     this.id,
@@ -16,8 +17,9 @@ class Category extends Equatable {
     required this.createdAt,
     this.order = 0,
     this.iconCodePoint,
+    this.isProtected = false,
   });
 
   @override
-  List<Object?> get props => [id, name, createdAt, order, iconCodePoint];
+  List<Object?> get props => [id, name, createdAt, order, iconCodePoint, isProtected];
 }

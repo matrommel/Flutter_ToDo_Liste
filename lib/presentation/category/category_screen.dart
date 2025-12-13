@@ -8,6 +8,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/di/injection.dart';
+import '../home/widgets/confetti_overlay.dart';
 import 'bloc/category_cubit.dart';
 import 'bloc/category_state.dart';
 import 'widgets/add_item_dialog.dart';
@@ -38,9 +39,17 @@ class _CategoryScreenContent extends StatelessWidget {
 
   const _CategoryScreenContent({required this.categoryName});
 
+  /// Easter Egg: Spezielle Namen haben Konfetti
+  bool _isEasterEggCategory() {
+    final specialNames = ['agnes', 'tamina', 'matze'];
+    return specialNames.contains(categoryName.toLowerCase());
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return ConfettiOverlay(
+      triggerConfetti: _isEasterEggCategory(),
+      child: Scaffold(
       appBar: AppBar(
         title: Text(categoryName),
         actions: [
@@ -428,6 +437,7 @@ class _CategoryScreenContent extends StatelessWidget {
             child: const Text('Löschen'),
           ),
         ],
+      ),
       ),
     );
   }

@@ -60,4 +60,15 @@ class CategoryLocalDataSource {
     );
     return Sqflite.firstIntValue(result) ?? 0;
   }
+
+  // Aktualisiere Biometrie-Schutz für Kategorie
+  Future<void> updateCategoryProtection(int categoryId, bool isProtected) async {
+    final db = await dbHelper.database;
+    await db.update(
+      'categories',
+      {'is_protected': isProtected ? 1 : 0},
+      where: 'id = ?',
+      whereArgs: [categoryId],
+    );
+  }
 }

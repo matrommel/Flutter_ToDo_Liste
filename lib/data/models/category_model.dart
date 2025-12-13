@@ -9,6 +9,7 @@ class CategoryModel extends Category {
     required super.createdAt,
     super.order,
     super.iconCodePoint,
+    super.isProtected,
   });
 
   // Von Domain Entity erstellen
@@ -19,6 +20,7 @@ class CategoryModel extends Category {
       createdAt: category.createdAt,
       order: category.order,
       iconCodePoint: category.iconCodePoint,
+      isProtected: category.isProtected,
     );
   }
 
@@ -30,6 +32,7 @@ class CategoryModel extends Category {
       createdAt: DateTime.fromMillisecondsSinceEpoch(map['created_at'] as int),
       order: map['order_num'] as int? ?? 0,
       iconCodePoint: map['icon_code'] as int?,
+      isProtected: (map['is_protected'] as int? ?? 0) == 1,
     );
   }
 
@@ -41,6 +44,7 @@ class CategoryModel extends Category {
       'created_at': createdAt.millisecondsSinceEpoch,
       'order_num': order,
       'icon_code': iconCodePoint,
+      'is_protected': isProtected ? 1 : 0,
     };
   }
 }

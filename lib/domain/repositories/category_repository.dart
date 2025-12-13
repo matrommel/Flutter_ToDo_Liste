@@ -10,4 +10,5 @@ abstract class CategoryRepository {
   Future<void> updateCategory(Category category);
   Future<void> deleteCategory(int id);
   Future<int> getCategoryItemCount(int categoryId);
+  Future<void> updateCategoryProtection(int categoryId, bool isProtected);
 }

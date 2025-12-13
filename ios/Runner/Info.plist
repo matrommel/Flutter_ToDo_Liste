@@ -45,5 +45,10 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- Biometric Authentication -->
+	<key>NSFaceIDUsageDescription</key>
+	<string>Diese App benötigt Zugriff auf Face ID zur Authentifizierung geschützter Kategorien.</string>
+	<key>NSLocalizedDescription</key>
+	<string>Biometrische Authentifizierung</string>
 </dict>
 </plist>

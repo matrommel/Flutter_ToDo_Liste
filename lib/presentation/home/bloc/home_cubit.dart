@@ -1,10 +1,12 @@
 // Presentation - Home Screen Logic (Cubit)
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:matzo/core/di/injection.dart';
 import 'package:matzo/domain/usecases/category/add_category.dart';
 import 'package:matzo/domain/usecases/category/delete_category.dart';
 import 'package:matzo/domain/usecases/category/get_categories.dart';
 import 'package:matzo/domain/usecases/category/get_category_item_count.dart';
+import 'package:matzo/domain/usecases/category/update_category_protection.dart';
 import 'package:matzo/domain/usecases/todo_item/get_todo_items.dart';
 import 'home_state.dart';
 
@@ -69,6 +71,17 @@ class HomeCubit extends Cubit<HomeState> {
   Future<void> removeCategory(int categoryId) async {
     try {
       await deleteCategory(categoryId);
+      await loadCategories(); // Neu laden
+    } catch (e) {
+      emit(HomeError(message: e.toString()));
+      await loadCategories();
+    }
+  }
+
+  // Biometrischer Schutz aktualisieren
+  Future<void> updateCategoryProtection(int categoryId, bool isProtected) async {
+    try {
+      await getIt<UpdateCategoryProtection>()(categoryId, isProtected);
       await loadCategories(); // Neu laden
     } catch (e) {
       emit(HomeError(message: e.toString()));

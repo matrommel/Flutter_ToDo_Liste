@@ -23,7 +23,7 @@ class DatabaseHelper {
       return await databaseFactoryFfiWeb.openDatabase(
         inMemoryDatabasePath,
         options: OpenDatabaseOptions(
-          version: 3,
+          version: 4,
           onCreate: _createDB,
           onUpgrade: _onUpgrade,
           onConfigure: _onConfigure,
@@ -36,7 +36,7 @@ class DatabaseHelper {
 
       return await openDatabase(
         path,
-        version: 3,
+        version: 4,
         onCreate: _createDB,
         onUpgrade: _onUpgrade,
         onConfigure: _onConfigure,
@@ -57,7 +57,8 @@ class DatabaseHelper {
         name TEXT NOT NULL,
         created_at INTEGER NOT NULL,
         order_num INTEGER DEFAULT 0,
-        icon_code INTEGER
+        icon_code INTEGER,
+        is_protected INTEGER DEFAULT 0
       )
     ''');
 
@@ -92,6 +93,9 @@ class DatabaseHelper {
     }
     if (oldVersion < 3) {
       await db.execute('ALTER TABLE todo_items ADD COLUMN order_num INTEGER DEFAULT 0');
+    }
+    if (oldVersion < 4) {
+      await db.execute('ALTER TABLE categories ADD COLUMN is_protected INTEGER DEFAULT 0');
     }
   }
 

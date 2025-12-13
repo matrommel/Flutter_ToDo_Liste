@@ -3,11 +3,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/di/injection.dart';
+import '../../core/services/biometric_auth_service.dart';
+import '../../domain/entities/category.dart';
 import '../category/category_screen.dart';
 import '../settings/settings_screen.dart';
 import 'bloc/home_cubit.dart';
 import 'bloc/home_state.dart';
 import 'widgets/category_card.dart';
+import 'widgets/biometric_protection_dialog.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -39,6 +42,9 @@ class _HomeScreenContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Setze Context für BiometricAuthService
+    BiometricAuthService.setContext(context);
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text('Meine Listen'),
@@ -138,7 +144,7 @@ class _HomeScreenContent extends StatelessWidget {
                   totalItemsCount: totalCount,
                   onTap: () => _navigateToCategory(context, category),
                   onLongPress: () =>
-                      _showDeleteDialog(context, category.id!, category.name),
+                      _showCategoryOptionsDialog(context, category),
                 );
               },
             );
@@ -150,19 +156,44 @@ class _HomeScreenContent extends StatelessWidget {
     );
   }
 
-  void _navigateToCategory(BuildContext context, category) {
-    final cubit = context.read<HomeCubit>();
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => CategoryScreen(
-          categoryId: category.id!,
-          categoryName: category.name,
+  void _navigateToCategory(BuildContext context, category) async {
+    print('DEBUG: _navigateToCategory called for ${category.name}');
+    print('DEBUG: isProtected = ${category.isProtected}');
+    
+    // Wenn Kategorie geschützt ist, Authentifizierung durchführen
+    if (category.isProtected) {
+      print('DEBUG: Category is protected, attempting biometric auth...');
+      final authenticated = await BiometricAuthService.authenticateForCategory(category.name);
+      print('DEBUG: Authentication result: $authenticated');
+      
+      if (!authenticated) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Authentifizierung fehlgeschlagen für "${category.name}"'),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+        return;
+      }
+    }
+
+    if (context.mounted) {
+      print('DEBUG: Navigation to category ${category.name}');
+      final cubit = context.read<HomeCubit>();
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => CategoryScreen(
+            categoryId: category.id!,
+            categoryName: category.name,
+          ),
         ),
-      ),
-    ).then((_) {
-      // Nach Rückkehr neu laden, falls Items geändert wurden
-      cubit.loadCategories();
-    });
+      ).then((_) {
+        // Nach Rückkehr neu laden, falls Items geändert wurden
+        cubit.loadCategories();
+      });
+    }
   }
 
   void _showAddCategoryDialog(BuildContext context) {
@@ -241,6 +272,92 @@ class _HomeScreenContent extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showCategoryOptionsDialog(BuildContext context, Category category) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('Optionen für "${category.name}"'),
+        content: const Text('Wähle eine Aktion:'),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              Navigator.of(dialogContext).pop();
+              
+              // Wenn die Kategorie geschützt ist, erfordere Authentifizierung
+              if (category.isProtected) {
+                final authenticated = 
+                    await BiometricAuthService.authenticateForCategory(category.name);
+                if (!context.mounted) return;
+                
+                if (!authenticated) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Authentifizierung erforderlich'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                  return;
+                }
+              }
+              
+              if (context.mounted) {
+                _showBiometricProtectionDialog(context, category);
+              }
+            },
+            child: Text(
+              category.isProtected ? '🔓 Schutz deaktivieren' : '🔒 Schutz aktivieren',
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.of(dialogContext).pop();
+              
+              // Wenn die Kategorie geschützt ist, erfordere Authentifizierung zum Löschen
+              if (category.isProtected) {
+                final authenticated = 
+                    await BiometricAuthService.authenticateForCategory(category.name);
+                if (!context.mounted) return;
+                
+                if (!authenticated) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Authentifizierung erforderlich'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                  return;
+                }
+              }
+              
+              if (context.mounted) {
+                _showDeleteDialog(context, category.id!, category.name);
+              }
+            },
+            child: const Text('🗑️ Löschen'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Abbrechen'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showBiometricProtectionDialog(BuildContext context, Category category) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => BiometricProtectionDialog(
+        categoryName: category.name,
+        isCurrentlyProtected: category.isProtected,
+        onProtectionChanged: (isProtected) {
+          final cubit = context.read<HomeCubit>();
+          cubit.updateCategoryProtection(category.id!, isProtected);
+        },
       ),
     );
   }

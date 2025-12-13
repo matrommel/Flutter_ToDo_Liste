@@ -60,6 +60,16 @@ class CategoryCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                  // Schloss-Icon für geschützte Kategorien
+                  if (category.isProtected)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8),
+                      child: Icon(
+                        Icons.lock,
+                        size: 20,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
                 ],
               ),
               const Spacer(),
