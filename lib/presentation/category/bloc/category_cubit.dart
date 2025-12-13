@@ -117,10 +117,12 @@ class CategoryCubit extends Cubit<CategoryState> {
 
     try {
       await toggleTodoItem(itemId);
-      // Keine sofortige Neuladung - SnackBar kann sichtbar bleiben
-      // loadItems wird durch den Stream automatisch ausgelöst
+      await loadItems(_currentCategoryId!);
     } catch (e) {
       emit(CategoryError(message: e.toString()));
+      if (_currentCategoryId != null) {
+        await loadItems(_currentCategoryId!);
+      }
     }
   }
 
@@ -309,19 +311,22 @@ class CategoryCubit extends Cubit<CategoryState> {
   List<TodoItem> _sortedItems(List<TodoItem> items) {
       int compareItems(TodoItem a, TodoItem b) {
         final orderCompare = a.order.compareTo(b.order);
-        if (orderCompare != 0) return orderCompare;
+        if (orderCompare != 0) {
+          // Umkehren wenn absteigend gewünscht
+          return _sortAscending ? orderCompare : -orderCompare;
+        }
         final createdCompare = a.createdAt.compareTo(b.createdAt);
-        if (createdCompare != 0) return createdCompare;
-        return a.title.toLowerCase().compareTo(b.title.toLowerCase());
+        if (createdCompare != 0) {
+          return _sortAscending ? createdCompare : -createdCompare;
+        }
+        final titleCompare = a.title.toLowerCase().compareTo(b.title.toLowerCase());
+        return _sortAscending ? titleCompare : -titleCompare;
       }
 
       final open = List<TodoItem>.from(items.where((i) => !i.isCompleted))..sort(compareItems);
       final completed = List<TodoItem>.from(items.where((i) => i.isCompleted))..sort(compareItems);
 
-      final orderedOpen = _sortAscending ? open : open.reversed.toList();
-      final orderedCompleted = _sortAscending ? completed : completed.reversed.toList();
-
-      return [...orderedOpen, ...orderedCompleted];
+      return [...open, ...completed];
     }
 
   // Alle erledigten Items löschen

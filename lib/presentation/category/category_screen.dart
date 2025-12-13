@@ -254,27 +254,8 @@ class _CategoryScreenContent extends StatelessWidget {
   }
 
   void _handleToggle(BuildContext context, item) {
-    final wasCompleted = item.isCompleted;
     final cubit = context.read<CategoryCubit>();
     cubit.toggleItem(item.id!);
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(
-          wasCompleted
-              ? '✓ ${item.title} als offen markiert'
-              : '✓ ${item.title} als erledigt markiert',
-        ),
-        duration: const Duration(seconds: 3),
-        behavior: SnackBarBehavior.floating,
-        action: SnackBarAction(
-          label: 'Rückgängig',
-          onPressed: () => cubit.toggleItem(item.id!),
-        ),
-      ),
-    );
   }
 
   void _handleIncrement(BuildContext context, item) {
