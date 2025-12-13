@@ -8,7 +8,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/di/injection.dart';
-import '../home/widgets/confetti_overlay.dart';
 import 'bloc/category_cubit.dart';
 import 'bloc/category_state.dart';
 import 'widgets/add_item_dialog.dart';
@@ -47,90 +46,88 @@ class _CategoryScreenContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ConfettiOverlay(
-      triggerConfetti: _isEasterEggCategory(),
-      child: Scaffold(
-      appBar: AppBar(
-        title: Text(categoryName),
-        actions: [
-          // Bulk-Actions Menu
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert),
-            tooltip: 'Mehr Aktionen',
-            onSelected: (value) {
-              switch (value) {
-                case 'toggle_sort':
-                  context.read<CategoryCubit>().toggleSortOrder();
-                  break;
-                case 'toggle_completed':
-                  context.read<CategoryCubit>().toggleShowCompleted();
-                  break;
-                case 'mark_all_done':
-                  _showMarkAllDoneDialog(context);
-                  break;
-                case 'delete_completed':
-                  _showDeleteCompletedDialog(context);
-                  break;
-              }
-            },
-            itemBuilder: (context) {
-              final state = context.read<CategoryCubit>().state;
-              final showCompleted = state is CategoryLoaded ? state.showCompleted : true;
-              final sortAscending = state is CategoryLoaded ? state.sortAscending : true;
+    return Scaffold(
+        appBar: AppBar(
+          title: Text(categoryName),
+          actions: [
+            // Bulk-Actions Menu
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert),
+              tooltip: 'Mehr Aktionen',
+              onSelected: (value) {
+                switch (value) {
+                  case 'toggle_sort':
+                    context.read<CategoryCubit>().toggleSortOrder();
+                    break;
+                  case 'toggle_completed':
+                    context.read<CategoryCubit>().toggleShowCompleted();
+                    break;
+                  case 'mark_all_done':
+                    _showMarkAllDoneDialog(context);
+                    break;
+                  case 'delete_completed':
+                    _showDeleteCompletedDialog(context);
+                    break;
+                }
+              },
+              itemBuilder: (context) {
+                final state = context.read<CategoryCubit>().state;
+                final showCompleted = state is CategoryLoaded ? state.showCompleted : true;
+                final sortAscending = state is CategoryLoaded ? state.sortAscending : true;
 
-              return [
-                PopupMenuItem(
-                  value: 'toggle_sort',
-                  child: Row(
-                    children: [
-                      Icon(sortAscending ? Icons.arrow_upward : Icons.arrow_downward),
-                      const SizedBox(width: 12),
-                      Text('Sortierung ${sortAscending ? 'absteigend' : 'aufsteigend'}'),
-                    ],
+                return [
+                  PopupMenuItem(
+                    value: 'toggle_sort',
+                    child: Row(
+                      children: [
+                        Icon(sortAscending ? Icons.arrow_upward : Icons.arrow_downward),
+                        const SizedBox(width: 12),
+                        Text('Sortierung ${sortAscending ? 'absteigend' : 'aufsteigend'}'),
+                      ],
+                    ),
                   ),
-                ),
-                PopupMenuItem(
-                  value: 'toggle_completed',
-                  child: Row(
-                    children: [
-                      Icon(showCompleted ? Icons.visibility_off : Icons.visibility),
-                      const SizedBox(width: 12),
-                      Text(showCompleted ? 'Abgehakte Items ausblenden' : 'Abgehakte Items einblenden'),
-                    ],
+                  PopupMenuItem(
+                    value: 'toggle_completed',
+                    child: Row(
+                      children: [
+                        Icon(showCompleted ? Icons.visibility_off : Icons.visibility),
+                        const SizedBox(width: 12),
+                        Text(showCompleted ? 'Abgehakte Items ausblenden' : 'Abgehakte Items einblenden'),
+                      ],
+                    ),
                   ),
-                ),
-                const PopupMenuItem(
-                  value: 'mark_all_done',
-                  child: Row(
-                    children: [
-                      Icon(Icons.check_circle_outline),
-                      SizedBox(width: 12),
-                      Text('Alle als erledigt markieren'),
-                    ],
+                  const PopupMenuItem(
+                    value: 'mark_all_done',
+                    child: Row(
+                      children: [
+                        Icon(Icons.check_circle_outline),
+                        SizedBox(width: 12),
+                        Text('Alle als erledigt markieren'),
+                      ],
+                    ),
                   ),
-                ),
-                const PopupMenuItem(
-                  value: 'delete_completed',
-                  child: Row(
-                    children: [
-                      Icon(Icons.delete_sweep_outlined),
-                      SizedBox(width: 12),
-                      Text('Erledigte löschen'),
-                    ],
+                  const PopupMenuItem(
+                    value: 'delete_completed',
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete_sweep_outlined),
+                        SizedBox(width: 12),
+                        Text('Erledigte löschen'),
+                      ],
+                    ),
                   ),
-                ),
-              ];
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () => _showAddItemDialog(context),
-            tooltip: 'Neues Item',
-          ),
-        ],
-      ),
-      body: BlocConsumer<CategoryCubit, CategoryState>(
-        listener: (context, state) {
+                ];
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.add),
+              onPressed: () => _showAddItemDialog(context),
+              tooltip: 'Neues Item',
+            ),
+          ],
+        ),
+        body: BlocConsumer<CategoryCubit, CategoryState>(
+          listener: (context, state) {
           if (state is CategoryError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -437,7 +434,6 @@ class _CategoryScreenContent extends StatelessWidget {
             child: const Text('Löschen'),
           ),
         ],
-      ),
       ),
     );
   }

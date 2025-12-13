@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:confetti/confetti.dart';
 import '../../core/di/injection.dart';
 import '../../core/services/biometric_auth_service.dart';
 import '../../domain/entities/category.dart';
@@ -24,8 +25,15 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-class _HomeScreenContent extends StatelessWidget {
+class _HomeScreenContent extends StatefulWidget {
   const _HomeScreenContent();
+
+  @override
+  State<_HomeScreenContent> createState() => _HomeScreenContentState();
+}
+
+class _HomeScreenContentState extends State<_HomeScreenContent> {
+  late ConfettiController _confettiController;
 
   static const List<IconData> _availableIcons = [
     Icons.list_alt,
@@ -41,51 +49,77 @@ class _HomeScreenContent extends StatelessWidget {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _confettiController = ConfettiController(duration: const Duration(seconds: 2));
+  }
+
+  @override
+  void dispose() {
+    _confettiController.dispose();
+    super.dispose();
+  }
+
+  /// Easter Egg: Spezielle Namen haben Konfetti
+  bool _isEasterEggCategory(String name) {
+    final specialNames = ['agnes', 'tamina', 'matze'];
+    return specialNames.contains(name.toLowerCase());
+  }
+
+  void _triggerConfetti() {
+    if (mounted) {
+      _confettiController.play();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     // Setze Context für BiometricAuthService
     BiometricAuthService.setContext(context);
     
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Meine Listen'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () => _showAddCategoryDialog(context),
-            tooltip: 'Neue Kategorie',
+    return Stack(
+      children: [
+        Scaffold(
+          appBar: AppBar(
+            title: const Text('Meine Listen'),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.add),
+                onPressed: () => _showAddCategoryDialog(context),
+                tooltip: 'Neue Kategorie',
+              ),
+              IconButton(
+                icon: const Icon(Icons.settings_outlined),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                  );
+                },
+                tooltip: 'Einstellungen',
+              ),
+            ],
           ),
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const SettingsScreen()),
-              );
-            },
-            tooltip: 'Einstellungen',
-          ),
-        ],
-      ),
-      body: BlocBuilder<HomeCubit, HomeState>(
-        builder: (context, state) {
-          if (state is HomeLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
+          body: BlocBuilder<HomeCubit, HomeState>(
+            builder: (context, state) {
+              if (state is HomeLoading) {
+                return const Center(child: CircularProgressIndicator());
+              }
 
-          if (state is HomeError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.error_outline,
-                    size: 48,
-                    color: Theme.of(context).colorScheme.error,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Fehler: ${state.message}',
-                    textAlign: TextAlign.center,
+              if (state is HomeError) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.error_outline,
+                        size: 48,
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Fehler: ${state.message}',
+                        textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton(
@@ -153,6 +187,29 @@ class _HomeScreenContent extends StatelessWidget {
           return const SizedBox.shrink();
         },
       ),
+        ),
+        IgnorePointer(
+          child: ConfettiWidget(
+            confettiController: _confettiController,
+            blastDirectionality: BlastDirectionality.explosive,
+            particleDrag: 0.05,
+            emissionFrequency: 0.05,
+            numberOfParticles: 100,
+            gravity: 0.05,
+            shouldLoop: false,
+            colors: const [
+              Colors.red,
+              Colors.blue,
+              Colors.green,
+              Colors.yellow,
+              Colors.purple,
+              Colors.pink,
+              Colors.orange,
+              Colors.cyan,
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -266,6 +323,12 @@ class _HomeScreenContent extends StatelessWidget {
                     name,
                     iconCodePoint: selectedIcon,
                   );
+                  // Konfetti triggern wenn spezielle Namen
+                  if (_isEasterEggCategory(name)) {
+                    Future.delayed(const Duration(milliseconds: 500), () {
+                      _triggerConfetti();
+                    });
+                  }
                 }
               },
               child: const Text('Erstellen'),

@@ -46,23 +46,27 @@ class _ConfettiOverlayState extends State<ConfettiOverlay> {
       children: [
         widget.child,
         if (widget.triggerConfetti)
-          Positioned.fill(
-            child: ConfettiWidget(
-              confettiController: _confettiController,
-              blastDirectionality: BlastDirectionality.explosive,
-              particleDrag: 0.05,
-              emissionFrequency: 0.05,
-              numberOfParticles: 50,
-              gravity: 0.1,
-              shouldLoop: false,
-              colors: const [
-                Colors.red,
-                Colors.blue,
-                Colors.green,
-                Colors.yellow,
-                Colors.purple,
-                Colors.pink,
-              ],
+          SizedBox.expand(
+            child: IgnorePointer(
+              child: ConfettiWidget(
+                confettiController: _confettiController,
+                blastDirectionality: BlastDirectionality.explosive,
+                particleDrag: 0.05,
+                emissionFrequency: 0.05,
+                numberOfParticles: 100,
+                gravity: 0.05,
+                shouldLoop: false,
+                colors: const [
+                  Colors.red,
+                  Colors.blue,
+                  Colors.green,
+                  Colors.yellow,
+                  Colors.purple,
+                  Colors.pink,
+                  Colors.orange,
+                  Colors.cyan,
+                ],
+              ),
             ),
           ),
       ],
