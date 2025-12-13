@@ -81,8 +81,8 @@ class SettingsScreen extends StatelessWidget {
               title: const Text('Hell'),
               subtitle: const Text('Immer helles Theme'),
               value: ThemeMode.light,
-              groupValue: themeProvider.themeMode,
-              onChanged: (mode) {
+              groupValue: themeProvider.themeMode, // ignore: deprecated_member_use
+              onChanged: (mode) { // ignore: deprecated_member_use
                 if (mode != null) {
                   themeProvider.setThemeMode(mode);
                   Navigator.pop(dialogContext);
@@ -93,8 +93,8 @@ class SettingsScreen extends StatelessWidget {
               title: const Text('Dunkel'),
               subtitle: const Text('Immer dunkles Theme'),
               value: ThemeMode.dark,
-              groupValue: themeProvider.themeMode,
-              onChanged: (mode) {
+              groupValue: themeProvider.themeMode, // ignore: deprecated_member_use
+              onChanged: (mode) { // ignore: deprecated_member_use
                 if (mode != null) {
                   themeProvider.setThemeMode(mode);
                   Navigator.pop(dialogContext);
@@ -105,8 +105,8 @@ class SettingsScreen extends StatelessWidget {
               title: const Text('System-Standard'),
               subtitle: const Text('Folgt den System-Einstellungen'),
               value: ThemeMode.system,
-              groupValue: themeProvider.themeMode,
-              onChanged: (mode) {
+              groupValue: themeProvider.themeMode, // ignore: deprecated_member_use
+              onChanged: (mode) { // ignore: deprecated_member_use
                 if (mode != null) {
                   themeProvider.setThemeMode(mode);
                   Navigator.pop(dialogContext);

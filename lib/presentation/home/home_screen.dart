@@ -151,6 +151,7 @@ class _HomeScreenContent extends StatelessWidget {
   }
 
   void _navigateToCategory(BuildContext context, category) {
+    final cubit = context.read<HomeCubit>();
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => CategoryScreen(
@@ -160,13 +161,14 @@ class _HomeScreenContent extends StatelessWidget {
       ),
     ).then((_) {
       // Nach Rückkehr neu laden, falls Items geändert wurden
-      context.read<HomeCubit>().loadCategories();
+      cubit.loadCategories();
     });
   }
 
   void _showAddCategoryDialog(BuildContext context) {
     final controller = TextEditingController();
     int selectedIcon = _availableIcons.first.codePoint;
+    final cubit = context.read<HomeCubit>();
 
     showDialog(
       context: context,
@@ -189,10 +191,10 @@ class _HomeScreenContent extends StatelessWidget {
                   onSubmitted: (value) {
                     if (value.trim().isNotEmpty) {
                       Navigator.of(dialogContext).pop();
-                      context.read<HomeCubit>().addNewCategory(
-                            value,
-                            iconCodePoint: selectedIcon,
-                          );
+                      cubit.addNewCategory(
+                        value,
+                        iconCodePoint: selectedIcon,
+                      );
                     }
                   },
                 ),
@@ -229,10 +231,10 @@ class _HomeScreenContent extends StatelessWidget {
                 final name = controller.text.trim();
                 if (name.isNotEmpty) {
                   Navigator.of(dialogContext).pop();
-                  context.read<HomeCubit>().addNewCategory(
-                        name,
-                        iconCodePoint: selectedIcon,
-                      );
+                  cubit.addNewCategory(
+                    name,
+                    iconCodePoint: selectedIcon,
+                  );
                 }
               },
               child: const Text('Erstellen'),

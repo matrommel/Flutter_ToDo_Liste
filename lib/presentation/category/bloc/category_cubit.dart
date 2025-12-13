@@ -60,7 +60,7 @@ class CategoryCubit extends Cubit<CategoryState> {
     try {
       final currentState = state;
 
-      // Falls Item bereits existiert: Zähler erhöhen statt neues anlegen
+      // Falls Item bereits existiert: Zähler setzen statt addieren (nicht die Historie addieren)
       if (currentState is CategoryLoaded) {
         final normalized = title.trim().toLowerCase();
         TodoItem? existing;
@@ -76,7 +76,8 @@ class CategoryCubit extends Cubit<CategoryState> {
           if (existing.isCompleted) {
             await toggleTodoItem(existing.id!);
           }
-          await updateItemCount(existing.id!, existing.count + count);
+          // Setze die neue Anzahl vom Modal, nicht addieren zur alten
+          await updateItemCount(existing.id!, count);
           await loadItems(_currentCategoryId!);
           return;
         }
@@ -116,12 +117,10 @@ class CategoryCubit extends Cubit<CategoryState> {
 
     try {
       await toggleTodoItem(itemId);
-      await loadItems(_currentCategoryId!); // Neu laden
+      // Keine sofortige Neuladung - SnackBar kann sichtbar bleiben
+      // loadItems wird durch den Stream automatisch ausgelöst
     } catch (e) {
       emit(CategoryError(message: e.toString()));
-      if (_currentCategoryId != null) {
-        await loadItems(_currentCategoryId!);
-      }
     }
   }
 
@@ -272,7 +271,7 @@ class CategoryCubit extends Cubit<CategoryState> {
       final combined = [...openItems, ...currentState.completedItems];
       emit(
         CategoryLoaded(
-          items: _sortedItems(combined),
+          items: combined, // Direkt übergeben, NICHT nochmal mit _sortedItems sortieren!
           showCompleted: _showCompleted,
           sortAscending: _sortAscending,
         ),

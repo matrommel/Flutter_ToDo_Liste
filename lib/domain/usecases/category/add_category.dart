@@ -10,15 +10,16 @@ class AddCategory {
 
   Future<int> call(String name, {int? iconCodePoint}) async {
     // Validierung
-    if (name.trim().isEmpty) {
+    final trimmedName = name.trim();
+    if (trimmedName.isEmpty) {
       throw Exception('Kategoriename darf nicht leer sein');
     }
-    if (name.length > 50) {
+    if (trimmedName.length > 50) {
       throw Exception('Kategoriename darf maximal 50 Zeichen lang sein');
     }
 
     final category = Category(
-      name: name.trim(),
+      name: trimmedName,
       createdAt: DateTime.now(),
       iconCodePoint: iconCodePoint,
     );

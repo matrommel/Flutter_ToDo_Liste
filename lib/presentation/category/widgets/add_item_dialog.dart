@@ -40,55 +40,72 @@ class _AddItemDialogState extends State<AddItemDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Titel Eingabefeld
-            TextFormField(
-              controller: _titleController,
-              autofocus: true,
-              decoration: const InputDecoration(
-                labelText: 'Name',
-                hintText: 'z.B. Milch',
-              ),
-              textCapitalization: TextCapitalization.sentences,
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'Bitte einen Namen eingeben';
+            // Titel Eingabefeld mit Autocomplete
+            Autocomplete<String>(
+              optionsBuilder: (TextEditingValue textEditingValue) {
+                if (textEditingValue.text.isEmpty) {
+                  return const Iterable<String>.empty();
                 }
-                if (value.length > 100) {
-                  return 'Maximal 100 Zeichen';
-                }
-                return null;
+                final text = textEditingValue.text.toLowerCase();
+                return widget.suggestions.where((suggestion) =>
+                    suggestion.toLowerCase().contains(text));
               },
-              onFieldSubmitted: (_) => _submit(),
+              onSelected: (String selection) {
+                _titleController.text = selection;
+              },
+              fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+                // Synchronisiere den internen Autocomplete-Controller mit unserem Controller
+                _titleController.text = controller.text;
+                _titleController.selection = controller.selection;
+                
+                return TextFormField(
+                  controller: controller,
+                  focusNode: focusNode,
+                  autofocus: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Name',
+                    hintText: 'z.B. Milch',
+                  ),
+                  textCapitalization: TextCapitalization.sentences,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Bitte einen Namen eingeben';
+                    }
+                    if (value.length > 100) {
+                      return 'Maximal 100 Zeichen';
+                    }
+                    return null;
+                  },
+                  onChanged: (value) {
+                    // Synchronisiere bei jedem Input
+                    _titleController.text = value;
+                  },
+                  onFieldSubmitted: (_) => _submit(),
+                );
+              },
+              optionsViewBuilder: (context, onSelected, options) {
+                return Align(
+                  alignment: Alignment.topLeft,
+                  child: Material(
+                    elevation: 4.0,
+                    child: ListView.builder(
+                      padding: EdgeInsets.zero,
+                      shrinkWrap: true,
+                      itemCount: options.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        final option = options.elementAt(index);
+                        return ListTile(
+                          dense: true,
+                          title: Text(option),
+                          onTap: () => onSelected(option),
+                        );
+                      },
+                    ),
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 16),
-            if (widget.suggestions.isNotEmpty) ...[
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Vorschläge',
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: widget.suggestions
-                    .map(
-                      (s) => ActionChip(
-                        label: Text(s),
-                        onPressed: () {
-                          _titleController.text = s;
-                          _titleController.selection = TextSelection.fromPosition(
-                            TextPosition(offset: s.length),
-                          );
-                        },
-                      ),
-                    )
-                    .toList(),
-              ),
-              const SizedBox(height: 16),
-            ],
             // Anzahl Auswahl
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

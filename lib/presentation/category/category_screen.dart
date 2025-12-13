@@ -255,7 +255,8 @@ class _CategoryScreenContent extends StatelessWidget {
 
   void _handleToggle(BuildContext context, item) {
     final wasCompleted = item.isCompleted;
-    context.read<CategoryCubit>().toggleItem(item.id!);
+    final cubit = context.read<CategoryCubit>();
+    cubit.toggleItem(item.id!);
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
 
@@ -266,11 +267,11 @@ class _CategoryScreenContent extends StatelessWidget {
               ? '✓ ${item.title} als offen markiert'
               : '✓ ${item.title} als erledigt markiert',
         ),
-        duration: const Duration(seconds: 2),
+        duration: const Duration(seconds: 3),
         behavior: SnackBarBehavior.floating,
         action: SnackBarAction(
           label: 'Rückgängig',
-          onPressed: () => context.read<CategoryCubit>().toggleItem(item.id!),
+          onPressed: () => cubit.toggleItem(item.id!),
         ),
       ),
     );
@@ -286,7 +287,8 @@ class _CategoryScreenContent extends StatelessWidget {
   }
 
   void _handleDelete(BuildContext context, item) {
-    context.read<CategoryCubit>().removeItem(item.id!);
+    final cubit = context.read<CategoryCubit>();
+    cubit.removeItem(item.id!);
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -295,7 +297,7 @@ class _CategoryScreenContent extends StatelessWidget {
         behavior: SnackBarBehavior.floating,
         action: SnackBarAction(
           label: 'Rückgängig',
-          onPressed: () => context.read<CategoryCubit>().restoreLastDeletedItem(),
+          onPressed: () => cubit.restoreLastDeletedItem(),
         ),
       ),
     );
@@ -347,9 +349,9 @@ class _CategoryScreenContent extends StatelessWidget {
           );
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('✓ Item aktualisiert'),
-          duration: const Duration(seconds: 2),
+        const SnackBar(
+          content: Text('✓ Item aktualisiert'),
+          duration: Duration(seconds: 2),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -380,21 +382,21 @@ class _CategoryScreenContent extends StatelessWidget {
             onPressed: () => Navigator.of(dialogContext).pop(),
             child: const Text('Abbrechen'),
           ),
-          FilledButton(
-            onPressed: () {
-              Navigator.of(dialogContext).pop();
-              context.read<CategoryCubit>().markAllAsComplete();
+            FilledButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                context.read<CategoryCubit>().markAllAsComplete();
 
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('✓ ${state.openItems.length} Items abgehakt'),
-                  duration: const Duration(seconds: 2),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            },
-            child: const Text('Alle abhaken'),
-          ),
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('✓ ${state.openItems.length} Items abgehakt'),
+                    duration: const Duration(seconds: 2),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+              child: const Text('Alle abhaken'),
+            ),
         ],
       ),
     );

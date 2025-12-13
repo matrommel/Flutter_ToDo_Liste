@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-import 'package:matzo/domain/entities/todo_item.dart';
 import 'package:matzo/domain/repositories/todo_item_repository.dart';
 import 'package:matzo/domain/usecases/todo_item/update_item_count.dart';
 
@@ -18,19 +17,6 @@ void main() {
   });
 
   group('UpdateItemCount UseCase', () {
-    late TodoItem testItem;
-
-    setUp(() {
-      testItem = TodoItem(
-        id: 1,
-        categoryId: 1,
-        title: 'Test Item',
-        count: 5,
-        isCompleted: false,
-        createdAt: DateTime.now(),
-      );
-    });
-
     test('sollte Anzahl erfolgreich erhöhen', () async {
       // Arrange
         when(mockRepository.updateItemCount(1, 10))
