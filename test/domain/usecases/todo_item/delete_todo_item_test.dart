@@ -21,20 +21,20 @@ void main() {
 
     test('sollte TodoItem erfolgreich löschen', () async {
       // Arrange
-      when(mockRepository.deleteTodoItem(testItemId))
+        when(mockRepository.deleteItem(testItemId))
           .thenAnswer((_) async => Future.value());
 
       // Act
       await useCase(testItemId);
 
       // Assert
-      verify(mockRepository.deleteTodoItem(testItemId)).called(1);
+      verify(mockRepository.deleteItem(testItemId)).called(1);
       verifyNoMoreInteractions(mockRepository);
     });
 
     test('sollte Exception weitergeben bei Fehler', () async {
       // Arrange
-      when(mockRepository.deleteTodoItem(testItemId))
+        when(mockRepository.deleteItem(testItemId))
           .thenThrow(Exception('Database error'));
 
       // Act & Assert
@@ -42,19 +42,19 @@ void main() {
         () => useCase(testItemId),
         throwsA(isA<Exception>()),
       );
-      verify(mockRepository.deleteTodoItem(testItemId)).called(1);
+      verify(mockRepository.deleteItem(testItemId)).called(1);
     });
 
     test('sollte mit verschiedenen IDs funktionieren', () async {
       // Arrange
       const ids = [1, 5, 100, 999];
-      when(mockRepository.deleteTodoItem(any))
+        when(mockRepository.deleteItem(any))
           .thenAnswer((_) async => Future.value());
 
       // Act & Assert
       for (final id in ids) {
         await useCase(id);
-        verify(mockRepository.deleteTodoItem(id)).called(1);
+        verify(mockRepository.deleteItem(id)).called(1);
       }
     });
   });

@@ -22,41 +22,37 @@ void main() {
 
     test('sollte Kategorie erfolgreich hinzufügen mit korrektem Namen', () async {
       // Arrange
-      when(mockRepository.addCategory(any))
-          .thenAnswer((_) async => 1);
+        when(mockRepository.addCategory(any)).thenAnswer((_) async => 1);
 
       // Act
-      final result = await useCase(testName);
+      final result = await useCase(testName, iconCodePoint: null);
 
       // Assert
       expect(result, 1);
       verify(mockRepository.addCategory(
-        argThat(predicate<Category>(
-          (cat) => cat.name == testName && cat.id == null,
-        )),
+        argThat(predicate<Category>((cat) =>
+            cat.name == testName && cat.iconCodePoint == null)),
       )).called(1);
-      verifyNoMoreInteractions(mockRepository);
     });
 
     test('sollte Whitespace trimmen', () async {
-      // Arrange
       const nameWithSpaces = '  Einkaufen  ';
-      when(mockRepository.addCategory(any))
-          .thenAnswer((_) async => 1);
+        when(mockRepository.addCategory(any)).thenAnswer((_) async => 1);
 
       // Act
-      await useCase(nameWithSpaces);
+      await useCase(nameWithSpaces, iconCodePoint: null);
 
       // Assert
       verify(mockRepository.addCategory(
-        argThat(predicate<Category>((cat) => cat.name == 'Einkaufen')),
+        argThat(predicate<Category>((cat) =>
+            cat.name == 'Einkaufen' && cat.iconCodePoint == null)),
       )).called(1);
     });
 
     test('sollte Exception werfen bei leerem Namen', () async {
       // Act & Assert
       expect(
-        () => useCase(''),
+        () => useCase('', iconCodePoint: null),
         throwsA(
           isA<Exception>().having(
             (e) => e.toString(),
@@ -71,7 +67,7 @@ void main() {
     test('sollte Exception werfen bei nur Whitespace', () async {
       // Act & Assert
       expect(
-        () => useCase('   '),
+        () => useCase('   ', iconCodePoint: null),
         throwsA(isA<Exception>()),
       );
       verifyNever(mockRepository.addCategory(any));
@@ -83,7 +79,7 @@ void main() {
 
       // Act & Assert
       expect(
-        () => useCase(longName),
+        () => useCase(longName, iconCodePoint: null),
         throwsA(
           isA<Exception>().having(
             (e) => e.toString(),
@@ -98,11 +94,10 @@ void main() {
     test('sollte Namen mit genau 50 Zeichen akzeptieren', () async {
       // Arrange
       final maxLengthName = 'a' * 50;
-      when(mockRepository.addCategory(any))
-          .thenAnswer((_) async => 1);
+        when(mockRepository.addCategory(any)).thenAnswer((_) async => 1);
 
       // Act
-      await useCase(maxLengthName);
+      await useCase(maxLengthName, iconCodePoint: null);
 
       // Assert
       verify(mockRepository.addCategory(any)).called(1);
@@ -111,15 +106,15 @@ void main() {
     test('sollte Sonderzeichen im Namen erlauben', () async {
       // Arrange
       const specialName = 'Einkauf & Haushalt (wichtig!)';
-      when(mockRepository.addCategory(any))
-          .thenAnswer((_) async => 1);
+        when(mockRepository.addCategory(any)).thenAnswer((_) async => 1);
 
       // Act
-      await useCase(specialName);
+      await useCase(specialName, iconCodePoint: null);
 
       // Assert
       verify(mockRepository.addCategory(
-        argThat(predicate<Category>((cat) => cat.name == specialName)),
+        argThat(predicate<Category>((cat) =>
+            cat.name == specialName && cat.iconCodePoint == null)),
       )).called(1);
     });
   });

@@ -1,4 +1,4 @@
-# Flutter_ToDo_Liste
+# Matzo
 
 Moderne ToDo-App mit Kategorien, Undo-Snackbars, Vorschlagschips und manueller Sortierung.
 

@@ -8,6 +8,8 @@ import 'package:matzo/domain/usecases/todo_item/delete_todo_item.dart';
 import 'package:matzo/domain/usecases/todo_item/get_todo_items.dart';
 import 'package:matzo/domain/usecases/todo_item/toggle_todo_item.dart';
 import 'package:matzo/domain/usecases/todo_item/update_item_count.dart';
+import 'package:matzo/domain/usecases/todo_item/update_item_order.dart';
+import 'package:matzo/domain/usecases/todo_item/update_todo_item.dart';
 import 'package:matzo/presentation/category/bloc/category_cubit.dart';
 import 'package:matzo/presentation/category/bloc/category_state.dart';
 
@@ -18,6 +20,8 @@ import 'category_cubit_test.mocks.dart';
   AddTodoItem,
   ToggleTodoItem,
   UpdateItemCount,
+  UpdateItemOrder,
+  UpdateTodoItem,
   DeleteTodoItem,
 ])
 void main() {
@@ -38,11 +42,12 @@ void main() {
     mockDeleteTodoItem = MockDeleteTodoItem();
 
     cubit = CategoryCubit(
-      categoryId: testCategoryId,
       getTodoItems: mockGetTodoItems,
       addTodoItem: mockAddTodoItem,
       toggleTodoItem: mockToggleTodoItem,
       updateItemCount: mockUpdateItemCount,
+      updateItemOrder: MockUpdateItemOrder(),
+      updateTodoItem: MockUpdateTodoItem(),
       deleteTodoItem: mockDeleteTodoItem,
     );
   });
@@ -84,13 +89,13 @@ void main() {
     });
 
     blocTest<CategoryCubit, CategoryState>(
-      'loadTodoItems sollte Items laden und nach Status sortieren',
+      'loadItems sollte Items laden und nach Status sortieren',
       build: () {
         when(mockGetTodoItems(testCategoryId))
             .thenAnswer((_) async => testItems);
         return cubit;
       },
-      act: (cubit) => cubit.loadTodoItems(),
+      act: (cubit) => cubit.loadItems(testCategoryId),
       expect: () => [
         CategoryLoading(),
         isA<CategoryLoaded>()
@@ -104,13 +109,13 @@ void main() {
     );
 
     blocTest<CategoryCubit, CategoryState>(
-      'loadTodoItems sollte leere Liste bei keinen Items zurückgeben',
+      'loadItems sollte leere Liste bei keinen Items zurückgeben',
       build: () {
         when(mockGetTodoItems(testCategoryId))
             .thenAnswer((_) async => []);
         return cubit;
       },
-      act: (cubit) => cubit.loadTodoItems(),
+      act: (cubit) => cubit.loadItems(testCategoryId),
       expect: () => [
         CategoryLoading(),
         isA<CategoryLoaded>()
@@ -121,13 +126,13 @@ void main() {
     );
 
     blocTest<CategoryCubit, CategoryState>(
-      'loadTodoItems sollte Fehler behandeln',
+      'loadItems sollte Fehler behandeln',
       build: () {
         when(mockGetTodoItems(testCategoryId))
             .thenThrow(Exception('Database error'));
         return cubit;
       },
-      act: (cubit) => cubit.loadTodoItems(),
+      act: (cubit) => cubit.loadItems(testCategoryId),
       expect: () => [
         CategoryLoading(),
         isA<CategoryError>()
@@ -136,36 +141,40 @@ void main() {
     );
 
     blocTest<CategoryCubit, CategoryState>(
-      'addItem sollte neues Item hinzufügen und Liste neu laden',
+      'addNewItem sollte neues Item hinzufügen und Liste neu laden',
       build: () {
-        when(mockAddTodoItem(categoryId: testCategoryId, title: 'Käse'))
+        when(mockAddTodoItem(categoryId: testCategoryId, title: 'Käse', count: 1, order: anyNamed('order')))
             .thenAnswer((_) async => 4);
         when(mockGetTodoItems(testCategoryId))
             .thenAnswer((_) async => testItems);
         return cubit;
       },
-      act: (cubit) => cubit.addItem('Käse'),
+      act: (cubit) => cubit.loadItems(testCategoryId).then((_) => cubit.addNewItem('Käse')),
       expect: () => [
+        CategoryLoading(),
+        isA<CategoryLoaded>(),
         CategoryLoading(),
         isA<CategoryLoaded>(),
       ],
       verify: (_) {
-        verify(mockAddTodoItem(categoryId: testCategoryId, title: 'Käse')).called(1);
-        verify(mockGetTodoItems(testCategoryId)).called(1);
+        verify(mockAddTodoItem(categoryId: testCategoryId, title: 'Käse', count: 1, order: anyNamed('order'))).called(1);
+        verify(mockGetTodoItems(testCategoryId)).called(2);
       },
     );
 
     blocTest<CategoryCubit, CategoryState>(
-      'addItem sollte Fehler behandeln und Liste neu laden',
+      'addNewItem sollte Fehler behandeln und Liste neu laden',
       build: () {
-        when(mockAddTodoItem(categoryId: testCategoryId, title: ''))
+        when(mockAddTodoItem(categoryId: testCategoryId, title: '', count: 1, order: anyNamed('order')))
             .thenThrow(Exception('Invalid title'));
         when(mockGetTodoItems(testCategoryId))
             .thenAnswer((_) async => testItems);
         return cubit;
       },
-      act: (cubit) => cubit.addItem(''),
+      act: (cubit) => cubit.loadItems(testCategoryId).then((_) => cubit.addNewItem('')),
       expect: () => [
+        CategoryLoading(),
+        isA<CategoryLoaded>(),
         isA<CategoryError>(),
         CategoryLoading(),
         isA<CategoryLoaded>(),
@@ -181,52 +190,58 @@ void main() {
             .thenAnswer((_) async => testItems);
         return cubit;
       },
-      act: (cubit) => cubit.toggleItem(testItems[0]),
+      act: (cubit) => cubit.loadItems(testCategoryId).then((_) => cubit.toggleItem(testItems[0].id!)),
       expect: () => [
+        CategoryLoading(),
+        isA<CategoryLoaded>(),
         CategoryLoading(),
         isA<CategoryLoaded>(),
       ],
       verify: (_) {
-        verify(mockToggleTodoItem(testItems[0])).called(1);
-        verify(mockGetTodoItems(testCategoryId)).called(1);
+        verify(mockToggleTodoItem(testItems[0].id!)).called(1);
+        verify(mockGetTodoItems(testCategoryId)).called(2);
       },
     );
 
     blocTest<CategoryCubit, CategoryState>(
       'incrementCount sollte Count erhöhen',
       build: () {
-        when(mockUpdateItemCount(testItems[0], 3))
+        when(mockUpdateItemCount(testItems[0].id!, 3))
             .thenAnswer((_) async => Future.value());
         when(mockGetTodoItems(testCategoryId))
             .thenAnswer((_) async => testItems);
         return cubit;
       },
-      act: (cubit) => cubit.incrementCount(testItems[0]),
+      act: (cubit) => cubit.loadItems(testCategoryId).then((_) => cubit.incrementCount(testItems[0].id!, testItems[0].count)),
       expect: () => [
+        CategoryLoading(),
+        isA<CategoryLoaded>(),
         CategoryLoading(),
         isA<CategoryLoaded>(),
       ],
       verify: (_) {
-        verify(mockUpdateItemCount(testItems[0], 3)).called(1);
+        verify(mockUpdateItemCount(testItems[0].id!, 3)).called(1);
       },
     );
 
     blocTest<CategoryCubit, CategoryState>(
       'decrementCount sollte Count verringern wenn > 1',
       build: () {
-        when(mockUpdateItemCount(testItems[0], 1))
+        when(mockUpdateItemCount(testItems[0].id!, 1))
             .thenAnswer((_) async => Future.value());
         when(mockGetTodoItems(testCategoryId))
             .thenAnswer((_) async => testItems);
         return cubit;
       },
-      act: (cubit) => cubit.decrementCount(testItems[0]),
+      act: (cubit) => cubit.loadItems(testCategoryId).then((_) => cubit.decrementCount(testItems[0].id!, testItems[0].count)),
       expect: () => [
+        CategoryLoading(),
+        isA<CategoryLoaded>(),
         CategoryLoading(),
         isA<CategoryLoaded>(),
       ],
       verify: (_) {
-        verify(mockUpdateItemCount(testItems[0], 1)).called(1);
+        verify(mockUpdateItemCount(testItems[0].id!, 1)).called(1);
       },
     );
 
@@ -237,15 +252,18 @@ void main() {
             .thenAnswer((_) async => testItems);
         return cubit;
       },
-      act: (cubit) => cubit.decrementCount(testItems[1]), // Milch hat count=1
-      expect: () => [],
+      act: (cubit) => cubit.loadItems(testCategoryId).then((_) => cubit.decrementCount(testItems[1].id!, testItems[1].count)), // Milch hat count=1
+      expect: () => [
+        CategoryLoading(),
+        isA<CategoryLoaded>(),
+      ],
       verify: (_) {
         verifyNever(mockUpdateItemCount(any, any));
       },
     );
 
     blocTest<CategoryCubit, CategoryState>(
-      'deleteItem sollte Item löschen und Liste neu laden',
+      'removeItem sollte Item löschen und Liste neu laden',
       build: () {
         when(mockDeleteTodoItem(1))
             .thenAnswer((_) async => Future.value());
@@ -253,14 +271,16 @@ void main() {
             .thenAnswer((_) async => testItems);
         return cubit;
       },
-      act: (cubit) => cubit.deleteItem(1),
+      act: (cubit) => cubit.loadItems(testCategoryId).then((_) => cubit.removeItem(1)),
       expect: () => [
+        CategoryLoading(),
+        isA<CategoryLoaded>(),
         CategoryLoading(),
         isA<CategoryLoaded>(),
       ],
       verify: (_) {
         verify(mockDeleteTodoItem(1)).called(1);
-        verify(mockGetTodoItems(testCategoryId)).called(1);
+        verify(mockGetTodoItems(testCategoryId)).called(2);
       },
     );
   });

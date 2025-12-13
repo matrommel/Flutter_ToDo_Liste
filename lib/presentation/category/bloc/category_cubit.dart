@@ -248,8 +248,9 @@ class CategoryCubit extends Cubit<CategoryState> {
         await loadItems(_currentCategoryId!);
       }
     }
+  }
 
-    // Items umsortieren (offene Liste)
+  // Items umsortieren (offene Liste)
     Future<void> reorderOpenItems(int oldIndex, int newIndex) async {
       if (_currentCategoryId == null) return;
 
@@ -278,7 +279,7 @@ class CategoryCubit extends Cubit<CategoryState> {
       );
     }
 
-    void toggleShowCompleted() {
+  void toggleShowCompleted() {
       if (state is CategoryLoaded) {
         _showCompleted = !_showCompleted;
         final current = state as CategoryLoaded;
@@ -292,7 +293,7 @@ class CategoryCubit extends Cubit<CategoryState> {
       }
     }
 
-    void toggleSortOrder() {
+  void toggleSortOrder() {
       if (state is CategoryLoaded) {
         _sortAscending = !_sortAscending;
         final current = state as CategoryLoaded;
@@ -306,7 +307,7 @@ class CategoryCubit extends Cubit<CategoryState> {
       }
     }
 
-    List<TodoItem> _sortedItems(List<TodoItem> items) {
+  List<TodoItem> _sortedItems(List<TodoItem> items) {
       int compareItems(TodoItem a, TodoItem b) {
         final orderCompare = a.order.compareTo(b.order);
         if (orderCompare != 0) return orderCompare;
@@ -323,7 +324,6 @@ class CategoryCubit extends Cubit<CategoryState> {
 
       return [...orderedOpen, ...orderedCompleted];
     }
-  }
 
   // Alle erledigten Items löschen
   Future<void> deleteAllCompleted() async {

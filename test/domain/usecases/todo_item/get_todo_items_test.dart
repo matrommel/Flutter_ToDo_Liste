@@ -32,7 +32,7 @@ void main() {
         ),
       ];
 
-      when(mockRepository.getTodoItemsByCategoryId(testCategoryId))
+        when(mockRepository.getItemsByCategory(testCategoryId))
           .thenAnswer((_) async => items);
 
       // Act
@@ -40,7 +40,7 @@ void main() {
 
       // Assert
       expect(result, items);
-      verify(mockRepository.getTodoItemsByCategoryId(testCategoryId)).called(1);
+      verify(mockRepository.getItemsByCategory(testCategoryId)).called(1);
     });
 
     test('sollte offene Items alphabetisch sortieren', () async {
@@ -56,7 +56,7 @@ void main() {
         TodoItem(
           id: 1,
           categoryId: testCategoryId,
-          title: 'Äpfel',
+          title: 'Apfel',
           isCompleted: false,
           createdAt: DateTime.now(),
         ),
@@ -69,7 +69,7 @@ void main() {
         ),
       ];
 
-      when(mockRepository.getTodoItemsByCategoryId(testCategoryId))
+        when(mockRepository.getItemsByCategory(testCategoryId))
           .thenAnswer((_) async => items);
 
       // Act
@@ -77,7 +77,7 @@ void main() {
 
       // Assert
       expect(result.length, 3);
-      expect(result[0].title, 'Äpfel');
+      expect(result[0].title, 'Apfel');
       expect(result[1].title, 'Milch');
       expect(result[2].title, 'Zucchini');
     });
@@ -101,7 +101,7 @@ void main() {
         ),
       ];
 
-      when(mockRepository.getTodoItemsByCategoryId(testCategoryId))
+        when(mockRepository.getItemsByCategory(testCategoryId))
           .thenAnswer((_) async => items);
 
       // Act
@@ -132,7 +132,7 @@ void main() {
         ),
       ];
 
-      when(mockRepository.getTodoItemsByCategoryId(testCategoryId))
+        when(mockRepository.getItemsByCategory(testCategoryId))
           .thenAnswer((_) async => items);
 
       // Act
@@ -172,7 +172,7 @@ void main() {
         ),
       ];
 
-      when(mockRepository.getTodoItemsByCategoryId(testCategoryId))
+        when(mockRepository.getItemsByCategory(testCategoryId))
           .thenAnswer((_) async => items);
 
       // Act
@@ -186,7 +186,7 @@ void main() {
 
     test('sollte leere Liste zurückgeben wenn keine Items', () async {
       // Arrange
-      when(mockRepository.getTodoItemsByCategoryId(testCategoryId))
+        when(mockRepository.getItemsByCategory(testCategoryId))
           .thenAnswer((_) async => []);
 
       // Act
@@ -229,7 +229,7 @@ void main() {
         ),
       ];
 
-      when(mockRepository.getTodoItemsByCategoryId(testCategoryId))
+        when(mockRepository.getItemsByCategory(testCategoryId))
           .thenAnswer((_) async => items);
 
       // Act

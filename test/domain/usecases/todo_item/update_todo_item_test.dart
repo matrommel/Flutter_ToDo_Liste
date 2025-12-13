@@ -29,14 +29,13 @@ void main() {
     test('sollte Titel erfolgreich aktualisieren', () async {
       // Arrange
       const newTitle = 'Milch (Bio)';
-      when(mockRepository.updateTodoItem(any))
-          .thenAnswer((_) async => Future.value());
+      when(mockRepository.updateItem(any)).thenAnswer((_) async => Future.value());
 
       // Act
-      await useCase(item: testItem, newTitle: newTitle);
+      await useCase(item: testItem, newTitle: newTitle, newCount: testItem.count);
 
       // Assert
-      final captured = verify(mockRepository.updateTodoItem(captureAny)).captured;
+      final captured = verify(mockRepository.updateItem(captureAny)).captured;
       final updatedItem = captured.first as TodoItem;
       expect(updatedItem.title, newTitle);
       expect(updatedItem.count, testItem.count); // Count unverändert
@@ -46,14 +45,13 @@ void main() {
     test('sollte Count erfolgreich aktualisieren', () async {
       // Arrange
       const newCount = 5;
-      when(mockRepository.updateTodoItem(any))
-          .thenAnswer((_) async => Future.value());
+      when(mockRepository.updateItem(any)).thenAnswer((_) async => Future.value());
 
       // Act
-      await useCase(item: testItem, newCount: newCount);
+      await useCase(item: testItem, newTitle: testItem.title, newCount: newCount);
 
       // Assert
-      final captured = verify(mockRepository.updateTodoItem(captureAny)).captured;
+      final captured = verify(mockRepository.updateItem(captureAny)).captured;
       final updatedItem = captured.first as TodoItem;
       expect(updatedItem.count, newCount);
       expect(updatedItem.title, testItem.title); // Titel unverändert
@@ -63,14 +61,13 @@ void main() {
       // Arrange
       const newTitle = 'Vollmilch';
       const newCount = 3;
-      when(mockRepository.updateTodoItem(any))
-          .thenAnswer((_) async => Future.value());
+      when(mockRepository.updateItem(any)).thenAnswer((_) async => Future.value());
 
       // Act
       await useCase(item: testItem, newTitle: newTitle, newCount: newCount);
 
       // Assert
-      final captured = verify(mockRepository.updateTodoItem(captureAny)).captured;
+      final captured = verify(mockRepository.updateItem(captureAny)).captured;
       final updatedItem = captured.first as TodoItem;
       expect(updatedItem.title, newTitle);
       expect(updatedItem.count, newCount);
@@ -79,14 +76,13 @@ void main() {
     test('sollte Whitespace im Titel trimmen', () async {
       // Arrange
       const newTitle = '  Milch  ';
-      when(mockRepository.updateTodoItem(any))
-          .thenAnswer((_) async => Future.value());
+      when(mockRepository.updateItem(any)).thenAnswer((_) async => Future.value());
 
       // Act
-      await useCase(item: testItem, newTitle: newTitle);
+      await useCase(item: testItem, newTitle: newTitle, newCount: testItem.count);
 
       // Assert
-      final captured = verify(mockRepository.updateTodoItem(captureAny)).captured;
+      final captured = verify(mockRepository.updateItem(captureAny)).captured;
       final updatedItem = captured.first as TodoItem;
       expect(updatedItem.title, 'Milch');
     });
@@ -94,8 +90,8 @@ void main() {
     test('sollte Exception werfen bei leerem Titel', () async {
       // Act & Assert
       expect(
-        () => useCase(item: testItem, newTitle: ''),
-        throwsA(
+        () => useCase(item: testItem, newTitle: '', newCount: testItem.count),
+          throwsA(
           isA<Exception>().having(
             (e) => e.toString(),
             'message',
@@ -103,16 +99,16 @@ void main() {
           ),
         ),
       );
-      verifyNever(mockRepository.updateTodoItem(any));
+        verifyNever(mockRepository.updateItem(any));
     });
 
     test('sollte Exception werfen bei nur Whitespace im Titel', () async {
       // Act & Assert
       expect(
-        () => useCase(item: testItem, newTitle: '   '),
-        throwsA(isA<Exception>()),
+        () => useCase(item: testItem, newTitle: '   ', newCount: testItem.count),
+          throwsA(isA<Exception>()),
       );
-      verifyNever(mockRepository.updateTodoItem(any));
+        verifyNever(mockRepository.updateItem(any));
     });
 
     test('sollte Exception werfen bei zu langem Titel (>100 Zeichen)', () async {
@@ -122,7 +118,7 @@ void main() {
       // Act & Assert
       expect(
         () => useCase(item: testItem, newTitle: longTitle),
-        throwsA(
+          throwsA(
           isA<Exception>().having(
             (e) => e.toString(),
             'message',
@@ -130,14 +126,14 @@ void main() {
           ),
         ),
       );
-      verifyNever(mockRepository.updateTodoItem(any));
+        verifyNever(mockRepository.updateItem(any));
     });
 
     test('sollte Exception werfen bei Count < 1', () async {
       // Act & Assert
       expect(
         () => useCase(item: testItem, newCount: 0),
-        throwsA(
+          throwsA(
           isA<Exception>().having(
             (e) => e.toString(),
             'message',
@@ -145,55 +141,52 @@ void main() {
           ),
         ),
       );
-      verifyNever(mockRepository.updateTodoItem(any));
+        verifyNever(mockRepository.updateItem(any));
     });
 
     test('sollte Exception werfen bei negativem Count', () async {
       // Act & Assert
       expect(
         () => useCase(item: testItem, newCount: -5),
-        throwsA(isA<Exception>()),
+          throwsA(isA<Exception>()),
       );
-      verifyNever(mockRepository.updateTodoItem(any));
+        verifyNever(mockRepository.updateItem(any));
     });
 
     test('sollte Titel mit genau 100 Zeichen akzeptieren', () async {
       // Arrange
       final maxLengthTitle = 'a' * 100;
-      when(mockRepository.updateTodoItem(any))
-          .thenAnswer((_) async => Future.value());
+      when(mockRepository.updateItem(any)).thenAnswer((_) async => Future.value());
 
       // Act
       await useCase(item: testItem, newTitle: maxLengthTitle);
 
       // Assert
-      verify(mockRepository.updateTodoItem(any)).called(1);
+      verify(mockRepository.updateItem(any)).called(1);
     });
 
     test('sollte Count = 1 akzeptieren', () async {
       // Arrange
-      when(mockRepository.updateTodoItem(any))
-          .thenAnswer((_) async => Future.value());
+      when(mockRepository.updateItem(any)).thenAnswer((_) async => Future.value());
 
       // Act
       await useCase(item: testItem, newCount: 1);
 
       // Assert
-      final captured = verify(mockRepository.updateTodoItem(captureAny)).captured;
+      final captured = verify(mockRepository.updateItem(captureAny)).captured;
       final updatedItem = captured.first as TodoItem;
       expect(updatedItem.count, 1);
     });
 
     test('sollte nichts aktualisieren wenn keine Parameter übergeben werden', () async {
       // Arrange
-      when(mockRepository.updateTodoItem(any))
-          .thenAnswer((_) async => Future.value());
+      when(mockRepository.updateItem(any)).thenAnswer((_) async => Future.value());
 
       // Act
       await useCase(item: testItem);
 
       // Assert
-      final captured = verify(mockRepository.updateTodoItem(captureAny)).captured;
+      final captured = verify(mockRepository.updateItem(captureAny)).captured;
       final updatedItem = captured.first as TodoItem;
       expect(updatedItem.title, testItem.title);
       expect(updatedItem.count, testItem.count);

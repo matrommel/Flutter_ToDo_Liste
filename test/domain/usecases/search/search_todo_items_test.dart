@@ -73,11 +73,11 @@ void main() {
 
     test('sollte Items nach Titel finden', () async {
       // Arrange
-      when(mockCategoryRepository.getCategories())
+        when(mockCategoryRepository.getAllCategories())
           .thenAnswer((_) async => testCategories);
-      when(mockTodoItemRepository.getTodoItemsByCategoryId(1))
+        when(mockTodoItemRepository.getItemsByCategory(1))
           .thenAnswer((_) async => testItems[1]!);
-      when(mockTodoItemRepository.getTodoItemsByCategoryId(2))
+        when(mockTodoItemRepository.getItemsByCategory(2))
           .thenAnswer((_) async => testItems[2]!);
 
       // Act
@@ -91,11 +91,11 @@ void main() {
 
     test('sollte Items nach Kategorie-Namen finden', () async {
       // Arrange
-      when(mockCategoryRepository.getCategories())
+        when(mockCategoryRepository.getAllCategories())
           .thenAnswer((_) async => testCategories);
-      when(mockTodoItemRepository.getTodoItemsByCategoryId(1))
+        when(mockTodoItemRepository.getItemsByCategory(1))
           .thenAnswer((_) async => testItems[1]!);
-      when(mockTodoItemRepository.getTodoItemsByCategoryId(2))
+        when(mockTodoItemRepository.getItemsByCategory(2))
           .thenAnswer((_) async => testItems[2]!);
 
       // Act
@@ -108,11 +108,11 @@ void main() {
 
     test('sollte Groß-/Kleinschreibung ignorieren', () async {
       // Arrange
-      when(mockCategoryRepository.getCategories())
+        when(mockCategoryRepository.getAllCategories())
           .thenAnswer((_) async => testCategories);
-      when(mockTodoItemRepository.getTodoItemsByCategoryId(1))
+        when(mockTodoItemRepository.getItemsByCategory(1))
           .thenAnswer((_) async => testItems[1]!);
-      when(mockTodoItemRepository.getTodoItemsByCategoryId(2))
+        when(mockTodoItemRepository.getItemsByCategory(2))
           .thenAnswer((_) async => testItems[2]!);
 
       // Act
@@ -125,11 +125,11 @@ void main() {
 
     test('sollte Teilstrings finden', () async {
       // Arrange
-      when(mockCategoryRepository.getCategories())
+        when(mockCategoryRepository.getAllCategories())
           .thenAnswer((_) async => testCategories);
-      when(mockTodoItemRepository.getTodoItemsByCategoryId(1))
+        when(mockTodoItemRepository.getItemsByCategory(1))
           .thenAnswer((_) async => testItems[1]!);
-      when(mockTodoItemRepository.getTodoItemsByCategoryId(2))
+        when(mockTodoItemRepository.getItemsByCategory(2))
           .thenAnswer((_) async => testItems[2]!);
 
       // Act
@@ -145,7 +145,7 @@ void main() {
 
       // Assert
       expect(result, isEmpty);
-      verifyNever(mockCategoryRepository.getCategories());
+      verifyNever(mockCategoryRepository.getAllCategories());
     });
 
     test('sollte leere Liste zurückgeben bei nur Whitespace', () async {
@@ -154,16 +154,16 @@ void main() {
 
       // Assert
       expect(result, isEmpty);
-      verifyNever(mockCategoryRepository.getCategories());
+      verifyNever(mockCategoryRepository.getAllCategories());
     });
 
     test('sollte Whitespace trimmen', () async {
       // Arrange
-      when(mockCategoryRepository.getCategories())
+        when(mockCategoryRepository.getAllCategories())
           .thenAnswer((_) async => testCategories);
-      when(mockTodoItemRepository.getTodoItemsByCategoryId(1))
+        when(mockTodoItemRepository.getItemsByCategory(1))
           .thenAnswer((_) async => testItems[1]!);
-      when(mockTodoItemRepository.getTodoItemsByCategoryId(2))
+        when(mockTodoItemRepository.getItemsByCategory(2))
           .thenAnswer((_) async => testItems[2]!);
 
       // Act
@@ -176,11 +176,11 @@ void main() {
 
     test('sollte leere Liste zurückgeben wenn keine Treffer', () async {
       // Arrange
-      when(mockCategoryRepository.getCategories())
+        when(mockCategoryRepository.getAllCategories())
           .thenAnswer((_) async => testCategories);
-      when(mockTodoItemRepository.getTodoItemsByCategoryId(1))
+        when(mockTodoItemRepository.getItemsByCategory(1))
           .thenAnswer((_) async => testItems[1]!);
-      when(mockTodoItemRepository.getTodoItemsByCategoryId(2))
+        when(mockTodoItemRepository.getItemsByCategory(2))
           .thenAnswer((_) async => testItems[2]!);
 
       // Act
@@ -203,11 +203,11 @@ void main() {
         ),
       ];
 
-      when(mockCategoryRepository.getCategories())
+        when(mockCategoryRepository.getAllCategories())
           .thenAnswer((_) async => testCategories);
-      when(mockTodoItemRepository.getTodoItemsByCategoryId(1))
+        when(mockTodoItemRepository.getItemsByCategory(1))
           .thenAnswer((_) async => testItems[1]!);
-      when(mockTodoItemRepository.getTodoItemsByCategoryId(2))
+        when(mockTodoItemRepository.getItemsByCategory(2))
           .thenAnswer((_) async => testItems[2]!);
 
       // Act
@@ -231,11 +231,11 @@ void main() {
         ),
       ];
 
-      when(mockCategoryRepository.getCategories())
+        when(mockCategoryRepository.getAllCategories())
           .thenAnswer((_) async => testCategories);
-      when(mockTodoItemRepository.getTodoItemsByCategoryId(1))
+        when(mockTodoItemRepository.getItemsByCategory(1))
           .thenAnswer((_) async => testItems[1]!);
-      when(mockTodoItemRepository.getTodoItemsByCategoryId(2))
+        when(mockTodoItemRepository.getItemsByCategory(2))
           .thenAnswer((_) async => []);
 
       // Act

@@ -38,7 +38,7 @@ Du solltest mindestens einen grünen Haken bei "Flutter" sehen.
 
 ```bash
 # Wechsle ins Projekt-Verzeichnis
-cd flutter_todo_app
+cd matzo
 
 # Installiere Dependencies
 flutter pub get

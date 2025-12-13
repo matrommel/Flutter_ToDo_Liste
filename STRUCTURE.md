@@ -1,7 +1,7 @@
 # Flutter Todo App - Projektstruktur
 
 ```
-flutter_todo_app/
+matzo/
 │
 ├── lib/                                    # Haupt-Source-Code
 │   ├── main.dart                          # App-Einstiegspunkt

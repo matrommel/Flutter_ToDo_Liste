@@ -23,8 +23,7 @@ void main() {
 
     test('sollte Item erfolgreich hinzufügen', () async {
       // Arrange
-      when(mockRepository.addTodoItem(any))
-          .thenAnswer((_) async => 1);
+        when(mockRepository.addItem(any)).thenAnswer((_) async => 1);
 
       // Act
       final result = await useCase(
@@ -34,22 +33,19 @@ void main() {
 
       // Assert
       expect(result, 1);
-      verify(mockRepository.addTodoItem(
-        argThat(predicate<TodoItem>(
-          (item) =>
-              item.categoryId == testCategoryId &&
-              item.title == testTitle &&
-              item.count == 1 &&
-              item.isCompleted == false,
-        )),
+      verify(mockRepository.addItem(
+        argThat(predicate<TodoItem>((item) =>
+            item.categoryId == testCategoryId &&
+            item.title == testTitle &&
+            item.count == 1 &&
+            item.isCompleted == false)),
       )).called(1);
     });
 
     test('sollte Whitespace trimmen', () async {
       // Arrange
       const titleWithSpaces = '  Milch kaufen  ';
-      when(mockRepository.addTodoItem(any))
-          .thenAnswer((_) async => 1);
+        when(mockRepository.addItem(any)).thenAnswer((_) async => 1);
 
       // Act
       await useCase(
@@ -58,7 +54,7 @@ void main() {
       );
 
       // Assert
-      verify(mockRepository.addTodoItem(
+      verify(mockRepository.addItem(
         argThat(predicate<TodoItem>((item) => item.title == 'Milch kaufen')),
       )).called(1);
     });
@@ -78,7 +74,7 @@ void main() {
           ),
         ),
       );
-      verifyNever(mockRepository.addTodoItem(any));
+      verifyNever(mockRepository.addItem(any));
     });
 
     test('sollte Exception werfen bei zu langem Titel (>100 Zeichen)', () async {
@@ -99,14 +95,13 @@ void main() {
           ),
         ),
       );
-      verifyNever(mockRepository.addTodoItem(any));
+      verifyNever(mockRepository.addItem(any));
     });
 
     test('sollte Titel mit genau 100 Zeichen akzeptieren', () async {
       // Arrange
       final maxLengthTitle = 'a' * 100;
-      when(mockRepository.addTodoItem(any))
-          .thenAnswer((_) async => 1);
+        when(mockRepository.addItem(any)).thenAnswer((_) async => 1);
 
       // Act
       await useCase(
@@ -115,13 +110,12 @@ void main() {
       );
 
       // Assert
-      verify(mockRepository.addTodoItem(any)).called(1);
+      verify(mockRepository.addItem(any)).called(1);
     });
 
     test('sollte count standardmäßig auf 1 setzen', () async {
       // Arrange
-      when(mockRepository.addTodoItem(any))
-          .thenAnswer((_) async => 1);
+        when(mockRepository.addItem(any)).thenAnswer((_) async => 1);
 
       // Act
       await useCase(
@@ -130,15 +124,14 @@ void main() {
       );
 
       // Assert
-      verify(mockRepository.addTodoItem(
+      verify(mockRepository.addItem(
         argThat(predicate<TodoItem>((item) => item.count == 1)),
       )).called(1);
     });
 
     test('sollte isCompleted standardmäßig auf false setzen', () async {
       // Arrange
-      when(mockRepository.addTodoItem(any))
-          .thenAnswer((_) async => 1);
+        when(mockRepository.addItem(any)).thenAnswer((_) async => 1);
 
       // Act
       await useCase(
@@ -147,7 +140,7 @@ void main() {
       );
 
       // Assert
-      verify(mockRepository.addTodoItem(
+      verify(mockRepository.addItem(
         argThat(predicate<TodoItem>((item) => item.isCompleted == false)),
       )).called(1);
     });

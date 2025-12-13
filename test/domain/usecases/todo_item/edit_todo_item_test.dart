@@ -34,14 +34,13 @@ void main() {
     test('sollte Item-Titel erfolgreich aktualisieren', () async {
       // Arrange
       const newTitle = 'Neuer Titel';
-      when(mockRepository.updateTodoItem(any))
-          .thenAnswer((_) async => {});
+        when(mockRepository.updateItem(any)).thenAnswer((_) async => {});
 
       // Act
       await useCase(item: testItem, newTitle: newTitle);
 
       // Assert
-      verify(mockRepository.updateTodoItem(
+      verify(mockRepository.updateItem(
         argThat(predicate<TodoItem>(
           (item) => item.id == 1 && item.title == newTitle,
         )),
@@ -51,14 +50,13 @@ void main() {
     test('sollte Whitespace trimmen', () async {
       // Arrange
       const titleWithSpaces = '  Neuer Titel  ';
-      when(mockRepository.updateTodoItem(any))
-          .thenAnswer((_) async => {});
+        when(mockRepository.updateItem(any)).thenAnswer((_) async => {});
 
       // Act
       await useCase(item: testItem, newTitle: titleWithSpaces);
 
       // Assert
-      verify(mockRepository.updateTodoItem(
+      verify(mockRepository.updateItem(
         argThat(predicate<TodoItem>((item) => item.title == 'Neuer Titel')),
       )).called(1);
     });
@@ -75,7 +73,7 @@ void main() {
           ),
         ),
       );
-      verifyNever(mockRepository.updateTodoItem(any));
+      verifyNever(mockRepository.updateItem(any));
     });
 
     test('sollte Exception werfen bei nur Whitespace', () async {
@@ -84,7 +82,7 @@ void main() {
         () => useCase(item: testItem, newTitle: '   '),
         throwsA(isA<Exception>()),
       );
-      verifyNever(mockRepository.updateTodoItem(any));
+      verifyNever(mockRepository.updateItem(any));
     });
 
     test('sollte Exception werfen bei zu langem Titel (>100 Zeichen)', () async {
@@ -102,33 +100,31 @@ void main() {
           ),
         ),
       );
-      verifyNever(mockRepository.updateTodoItem(any));
+      verifyNever(mockRepository.updateItem(any));
     });
 
     test('sollte Titel mit genau 100 Zeichen akzeptieren', () async {
       // Arrange
       final maxLengthTitle = 'a' * 100;
-      when(mockRepository.updateTodoItem(any))
-          .thenAnswer((_) async => {});
+        when(mockRepository.updateItem(any)).thenAnswer((_) async => {});
 
       // Act
       await useCase(item: testItem, newTitle: maxLengthTitle);
 
       // Assert
-      verify(mockRepository.updateTodoItem(any)).called(1);
+      verify(mockRepository.updateItem(any)).called(1);
     });
 
     test('sollte andere Felder unverändert lassen', () async {
       // Arrange
       const newTitle = 'Neuer Titel';
-      when(mockRepository.updateTodoItem(any))
-          .thenAnswer((_) async => {});
+        when(mockRepository.updateItem(any)).thenAnswer((_) async => {});
 
       // Act
       await useCase(item: testItem, newTitle: newTitle);
 
       // Assert
-      verify(mockRepository.updateTodoItem(
+      verify(mockRepository.updateItem(
         argThat(predicate<TodoItem>(
           (item) =>
               item.id == 1 &&
@@ -142,14 +138,13 @@ void main() {
     test('sollte Sonderzeichen im Titel erlauben', () async {
       // Arrange
       const specialTitle = 'Milch & Brot (2x kaufen!)';
-      when(mockRepository.updateTodoItem(any))
-          .thenAnswer((_) async => {});
+        when(mockRepository.updateItem(any)).thenAnswer((_) async => {});
 
       // Act
       await useCase(item: testItem, newTitle: specialTitle);
 
       // Assert
-      verify(mockRepository.updateTodoItem(
+      verify(mockRepository.updateItem(
         argThat(predicate<TodoItem>((item) => item.title == specialTitle)),
       )).called(1);
     });

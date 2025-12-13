@@ -41,7 +41,7 @@ void main() {
 
     test('sollte Liste von Kategorien zurückgeben', () async {
       // Arrange
-      when(mockRepository.getCategories())
+        when(mockRepository.getAllCategories())
           .thenAnswer((_) async => testCategories);
 
       // Act
@@ -50,13 +50,13 @@ void main() {
       // Assert
       expect(result, testCategories);
       expect(result.length, 3);
-      verify(mockRepository.getCategories()).called(1);
+      verify(mockRepository.getAllCategories()).called(1);
       verifyNoMoreInteractions(mockRepository);
     });
 
     test('sollte leere Liste zurückgeben wenn keine Kategorien existieren', () async {
       // Arrange
-      when(mockRepository.getCategories())
+        when(mockRepository.getAllCategories())
           .thenAnswer((_) async => []);
 
       // Act
@@ -64,12 +64,12 @@ void main() {
 
       // Assert
       expect(result, isEmpty);
-      verify(mockRepository.getCategories()).called(1);
+      verify(mockRepository.getAllCategories()).called(1);
     });
 
     test('sollte Exception weitergeben bei Fehler', () async {
       // Arrange
-      when(mockRepository.getCategories())
+        when(mockRepository.getAllCategories())
           .thenThrow(Exception('Database error'));
 
       // Act & Assert
@@ -77,12 +77,12 @@ void main() {
         () => useCase(),
         throwsA(isA<Exception>()),
       );
-      verify(mockRepository.getCategories()).called(1);
+      verify(mockRepository.getAllCategories()).called(1);
     });
 
     test('sollte Kategorien in korrekter Reihenfolge zurückgeben', () async {
       // Arrange
-      when(mockRepository.getCategories())
+        when(mockRepository.getAllCategories())
           .thenAnswer((_) async => testCategories);
 
       // Act

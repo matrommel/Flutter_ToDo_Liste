@@ -8,10 +8,12 @@ import 'dart:async' as _i4;
 import 'package:matzo/domain/entities/todo_item.dart' as _i5;
 import 'package:matzo/domain/repositories/todo_item_repository.dart' as _i2;
 import 'package:matzo/domain/usecases/todo_item/add_todo_item.dart' as _i6;
-import 'package:matzo/domain/usecases/todo_item/delete_todo_item.dart' as _i9;
+import 'package:matzo/domain/usecases/todo_item/delete_todo_item.dart' as _i11;
 import 'package:matzo/domain/usecases/todo_item/get_todo_items.dart' as _i3;
 import 'package:matzo/domain/usecases/todo_item/toggle_todo_item.dart' as _i7;
 import 'package:matzo/domain/usecases/todo_item/update_item_count.dart' as _i8;
+import 'package:matzo/domain/usecases/todo_item/update_item_order.dart' as _i9;
+import 'package:matzo/domain/usecases/todo_item/update_todo_item.dart' as _i10;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -89,6 +91,7 @@ class MockAddTodoItem extends _i1.Mock implements _i6.AddTodoItem {
     required int? categoryId,
     required String? title,
     int? count = 1,
+    int? order = 0,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -98,6 +101,7 @@ class MockAddTodoItem extends _i1.Mock implements _i6.AddTodoItem {
             #categoryId: categoryId,
             #title: title,
             #count: count,
+            #order: order,
           },
         ),
         returnValue: _i4.Future<int>.value(0),
@@ -167,10 +171,83 @@ class MockUpdateItemCount extends _i1.Mock implements _i8.UpdateItemCount {
       ) as _i4.Future<void>);
 }
 
+/// A class which mocks [UpdateItemOrder].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockUpdateItemOrder extends _i1.Mock implements _i9.UpdateItemOrder {
+  MockUpdateItemOrder() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i2.TodoItemRepository get repository => (super.noSuchMethod(
+        Invocation.getter(#repository),
+        returnValue: _FakeTodoItemRepository_0(
+          this,
+          Invocation.getter(#repository),
+        ),
+      ) as _i2.TodoItemRepository);
+
+  @override
+  _i4.Future<void> call(
+    int? itemId,
+    int? newOrder,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #call,
+          [
+            itemId,
+            newOrder,
+          ],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+}
+
+/// A class which mocks [UpdateTodoItem].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockUpdateTodoItem extends _i1.Mock implements _i10.UpdateTodoItem {
+  MockUpdateTodoItem() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i2.TodoItemRepository get repository => (super.noSuchMethod(
+        Invocation.getter(#repository),
+        returnValue: _FakeTodoItemRepository_0(
+          this,
+          Invocation.getter(#repository),
+        ),
+      ) as _i2.TodoItemRepository);
+
+  @override
+  _i4.Future<void> call({
+    required _i5.TodoItem? item,
+    String? newTitle,
+    int? newCount,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #call,
+          [],
+          {
+            #item: item,
+            #newTitle: newTitle,
+            #newCount: newCount,
+          },
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+}
+
 /// A class which mocks [DeleteTodoItem].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockDeleteTodoItem extends _i1.Mock implements _i9.DeleteTodoItem {
+class MockDeleteTodoItem extends _i1.Mock implements _i11.DeleteTodoItem {
   MockDeleteTodoItem() {
     _i1.throwOnMissingStub(this);
   }

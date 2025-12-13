@@ -33,54 +33,44 @@ void main() {
 
     test('sollte Anzahl erfolgreich erhöhen', () async {
       // Arrange
-      when(mockRepository.updateTodoItem(any))
+        when(mockRepository.updateItemCount(1, 10))
           .thenAnswer((_) async => {});
 
       // Act
-      await useCase(testItem, 10);
+      await useCase(1, 10);
 
       // Assert
-      verify(mockRepository.updateTodoItem(
-        argThat(predicate<TodoItem>(
-          (item) => item.id == 1 && item.count == 10,
-        )),
-      )).called(1);
+      verify(mockRepository.updateItemCount(1, 10)).called(1);
     });
 
     test('sollte Anzahl erfolgreich verringern', () async {
       // Arrange
-      when(mockRepository.updateTodoItem(any))
+        when(mockRepository.updateItemCount(1, 2))
           .thenAnswer((_) async => {});
 
       // Act
-      await useCase(testItem, 2);
+      await useCase(1, 2);
 
       // Assert
-      verify(mockRepository.updateTodoItem(
-        argThat(predicate<TodoItem>(
-          (item) => item.id == 1 && item.count == 2,
-        )),
-      )).called(1);
+      verify(mockRepository.updateItemCount(1, 2)).called(1);
     });
 
     test('sollte Anzahl von 1 akzeptieren', () async {
       // Arrange
-      when(mockRepository.updateTodoItem(any))
+        when(mockRepository.updateItemCount(1, 1))
           .thenAnswer((_) async => {});
 
       // Act
-      await useCase(testItem, 1);
+      await useCase(1, 1);
 
       // Assert
-      verify(mockRepository.updateTodoItem(
-        argThat(predicate<TodoItem>((item) => item.count == 1)),
-      )).called(1);
+      verify(mockRepository.updateItemCount(1, 1)).called(1);
     });
 
     test('sollte Exception werfen bei Anzahl < 1', () async {
       // Act & Assert
       expect(
-        () => useCase(testItem, 0),
+        () => useCase(1, 0),
         throwsA(
           isA<Exception>().having(
             (e) => e.toString(),
@@ -89,50 +79,40 @@ void main() {
           ),
         ),
       );
-      verifyNever(mockRepository.updateTodoItem(any));
+      verifyNever(mockRepository.updateItemCount(any, any));
     });
 
     test('sollte Exception werfen bei negativer Anzahl', () async {
       // Act & Assert
       expect(
-        () => useCase(testItem, -5),
+        () => useCase(1, -5),
         throwsA(isA<Exception>()),
       );
-      verifyNever(mockRepository.updateTodoItem(any));
+      verifyNever(mockRepository.updateItemCount(any, any));
     });
 
     test('sollte andere Felder unverändert lassen', () async {
       // Arrange
-      when(mockRepository.updateTodoItem(any))
+        when(mockRepository.updateItemCount(1, 7))
           .thenAnswer((_) async => {});
 
       // Act
-      await useCase(testItem, 7);
+      await useCase(1, 7);
 
       // Assert
-      verify(mockRepository.updateTodoItem(
-        argThat(predicate<TodoItem>(
-          (item) =>
-              item.id == 1 &&
-              item.categoryId == 1 &&
-              item.title == 'Test Item' &&
-              item.isCompleted == false,
-        )),
-      )).called(1);
+      verify(mockRepository.updateItemCount(1, 7)).called(1);
     });
 
     test('sollte große Anzahlen akzeptieren', () async {
       // Arrange
-      when(mockRepository.updateTodoItem(any))
+        when(mockRepository.updateItemCount(1, 9999))
           .thenAnswer((_) async => {});
 
       // Act
-      await useCase(testItem, 9999);
+      await useCase(1, 9999);
 
       // Assert
-      verify(mockRepository.updateTodoItem(
-        argThat(predicate<TodoItem>((item) => item.count == 9999)),
-      )).called(1);
+      verify(mockRepository.updateItemCount(1, 9999)).called(1);
     });
   });
 }
