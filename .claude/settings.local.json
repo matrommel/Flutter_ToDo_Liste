@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter pub get:*)",
+      "Bash(flutter doctor:*)",
+      "Bash(flutter run:*)",
+      "Bash(find:*)",
+      "Bash(flutter analyze:*)",
+      "Bash(flutter create:*)",
+      "Bash(curl:*)",
+      "Bash(dir \"$LOCALAPPDATA\\Pub\\Cache\\hosted\\pub.dev\")",
+      "Bash(flutter pub cache:*)",
+      "Bash(flutter clean:*)",
+      "Bash(copy Matzo.png webfavicon.png)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

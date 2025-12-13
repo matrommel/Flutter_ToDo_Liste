@@ -6,6 +6,16 @@
 *.swp
 .buildlog/
 .history
+.vscode/
+.idea/
+*.iml
+*.suo
+
+# Local databases / artifacts
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
 
 
 
@@ -41,6 +51,12 @@ analysis_benchmark.json
 .pub-preload-cache/
 .pub/
 build/
+**/build/
+*.apk
+*.aab
+*.ipa
+*.app.dSYM
+*.xcarchive
 flutter_*.png
 linked_*.ds
 unlinked.ds

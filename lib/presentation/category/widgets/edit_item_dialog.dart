@@ -1,0 +1,125 @@
+// Presentation - Edit Item Dialog
+// Ermöglicht das Bearbeiten von Titel und Count eines bestehenden Items
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+class EditItemDialog extends StatefulWidget {
+  final String initialTitle;
+  final int initialCount;
+
+  const EditItemDialog({
+    super.key,
+    required this.initialTitle,
+    required this.initialCount,
+  });
+
+  @override
+  State<EditItemDialog> createState() => _EditItemDialogState();
+}
+
+class _EditItemDialogState extends State<EditItemDialog> {
+  late TextEditingController _titleController;
+  late TextEditingController _countController;
+  final _formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController = TextEditingController(text: widget.initialTitle);
+    _countController = TextEditingController(text: '${widget.initialCount}');
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _countController.dispose();
+    super.dispose();
+  }
+
+  void _save() {
+    if (_formKey.currentState?.validate() ?? false) {
+      Navigator.of(context).pop({
+        'title': _titleController.text.trim(),
+        'count': int.parse(_countController.text),
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Item bearbeiten'),
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Titel
+            TextFormField(
+              controller: _titleController,
+              autofocus: true,
+              maxLength: 100,
+              textCapitalization: TextCapitalization.sentences,
+              decoration: const InputDecoration(
+                labelText: 'Titel',
+                hintText: 'z.B. Milch',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.edit_outlined),
+              ),
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Bitte einen Titel eingeben';
+                }
+                if (value.length > 100) {
+                  return 'Maximal 100 Zeichen erlaubt';
+                }
+                return null;
+              },
+              onFieldSubmitted: (_) => _save(),
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // Anzahl
+            TextFormField(
+              controller: _countController,
+              keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+              ],
+              decoration: const InputDecoration(
+                labelText: 'Anzahl',
+                hintText: '1',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.numbers),
+                helperText: 'Mindestens 1',
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Bitte eine Anzahl eingeben';
+                }
+                final count = int.tryParse(value);
+                if (count == null || count < 1) {
+                  return 'Anzahl muss mindestens 1 sein';
+                }
+                return null;
+              },
+              onFieldSubmitted: (_) => _save(),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Abbrechen'),
+        ),
+        FilledButton(
+          onPressed: _save,
+          child: const Text('Speichern'),
+        ),
+      ],
+    );
+  }
+}
