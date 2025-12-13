@@ -63,7 +63,7 @@ class _EditItemDialogState extends State<EditItemDialog> {
               textCapitalization: TextCapitalization.sentences,
               decoration: const InputDecoration(
                 labelText: 'Titel',
-                hintText: 'z.B. Milch',
+                hintText: 'z.B. Pizza',
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.edit_outlined),
               ),

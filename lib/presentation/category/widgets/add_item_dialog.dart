@@ -64,7 +64,7 @@ class _AddItemDialogState extends State<AddItemDialog> {
                   autofocus: true,
                   decoration: const InputDecoration(
                     labelText: 'Name',
-                    hintText: 'z.B. Milch',
+                    hintText: 'z.B. Pizza',
                   ),
                   textCapitalization: TextCapitalization.sentences,
                   validator: (value) {
