@@ -44,8 +44,49 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
     Icons.flight_takeoff,
     Icons.school,
     Icons.favorite_outline,
-    Icons.calendar_today,
     Icons.bookmark,
+    Icons.restaurant,
+    Icons.local_cafe,
+    Icons.local_pizza,
+    Icons.cake,
+    Icons.breakfast_dining,
+    Icons.local_bar,
+    Icons.icecream,
+    Icons.medical_services,
+    Icons.healing,
+    Icons.favorite,
+    Icons.pool,
+    Icons.directions_bike,
+    Icons.directions_run,
+    Icons.hiking,
+    Icons.surfing,
+    Icons.snowboarding,
+    Icons.music_note,
+    Icons.headphones,
+    Icons.movie,
+    Icons.videogame_asset,
+    Icons.attractions,
+    Icons.book,
+    Icons.science,
+    Icons.palette,
+    Icons.photo_camera,
+    Icons.videocam,
+    Icons.beach_access,
+    Icons.forest,
+    Icons.pets,
+    Icons.build,
+    Icons.construction,
+    Icons.electrical_services,
+    Icons.store,
+    Icons.storefront,
+    Icons.attach_money,
+    Icons.account_balance,
+    Icons.savings,
+    Icons.card_giftcard,
+    Icons.redeem,
+    Icons.celebration,
+    Icons.party_mode,
+    Icons.nightlife,
   ];
 
   @override
@@ -171,11 +212,15 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
                 final category = state.categories[index];
                 final openCount = state.itemCounts[category.id] ?? 0;
                 final totalCount = state.totalItemCounts[category.id] ?? 0;
+                final subcats = state.subcategories[category.id] ?? [];
 
                 return CategoryCard(
                   category: category,
                   openItemsCount: openCount,
                   totalItemsCount: totalCount,
+                  subcategories: subcats,
+                  subcategoryOpenCounts: state.subcategoryOpenCounts,
+                  subcategoryTotalCounts: state.subcategoryTotalCounts,
                   onTap: () => _navigateToCategory(context, category),
                   onLongPress: () =>
                       _showCategoryOptionsDialog(context, category),
@@ -254,22 +299,40 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
   }
 
   void _showAddCategoryDialog(BuildContext context) {
-    final controller = TextEditingController();
-    int selectedIcon = _availableIcons.first.codePoint;
+    final nameController = TextEditingController();
+    final emojiController = TextEditingController();
+    int? selectedIcon = _availableIcons.first.codePoint;
+    bool useCustomEmoji = false;
     final cubit = context.read<HomeCubit>();
 
     showDialog(
       context: context,
       builder: (dialogContext) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: const Text('Neue Kategorie'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+        builder: (context, setState) => Dialog(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              maxWidth: 500,
+              maxHeight: 600,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Neue Kategorie',
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                 TextField(
-                  controller: controller,
+                  controller: nameController,
                   autofocus: true,
                   decoration: const InputDecoration(
                     labelText: 'Name',
@@ -281,59 +344,136 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
                       Navigator.of(dialogContext).pop();
                       cubit.addNewCategory(
                         value,
-                        iconCodePoint: selectedIcon,
+                        iconCodePoint: useCustomEmoji ? null : selectedIcon,
                       );
                     }
                   },
                 ),
                 const SizedBox(height: 16),
-                Text(
-                  'Icon auswählen',
-                  style: Theme.of(context).textTheme.titleSmall,
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        useCustomEmoji ? 'Eigenes Emoji' : 'Icon auswählen',
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                    ),
+                    TextButton.icon(
+                      onPressed: () => setState(() {
+                        useCustomEmoji = !useCustomEmoji;
+                        if (useCustomEmoji) {
+                          selectedIcon = null;
+                        } else {
+                          selectedIcon = _availableIcons.first.codePoint;
+                          emojiController.clear();
+                        }
+                      }),
+                      icon: Icon(useCustomEmoji ? Icons.apps : Icons.emoji_emotions),
+                      label: Text(useCustomEmoji ? 'Icons' : 'Emoji'),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: _availableIcons.map((icon) {
-                    final isSelected = icon.codePoint == selectedIcon;
-                    return ChoiceChip(
-                      label: Icon(icon),
-                      selected: isSelected,
-                      onSelected: (_) => setState(() {
-                        selectedIcon = icon.codePoint;
-                      }),
-                    );
-                  }).toList(),
-                ),
-              ],
+                if (useCustomEmoji)
+                  TextField(
+                    controller: emojiController,
+                    decoration: const InputDecoration(
+                      labelText: 'Emoji eingeben',
+                      hintText: '🍕',
+                      border: OutlineInputBorder(),
+                    ),
+                    maxLength: 2,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 32),
+                  )
+                else
+                  SizedBox(
+                    height: 200,
+                    child: GridView.builder(
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 6,
+                        childAspectRatio: 1,
+                        crossAxisSpacing: 4,
+                        mainAxisSpacing: 4,
+                      ),
+                      itemCount: _availableIcons.length,
+                      itemBuilder: (context, index) {
+                        final icon = _availableIcons[index];
+                        final isSelected = icon.codePoint == selectedIcon;
+                        return GestureDetector(
+                          onTap: () => setState(() {
+                            selectedIcon = icon.codePoint;
+                          }),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: isSelected
+                                    ? Theme.of(context).colorScheme.primary
+                                    : Theme.of(context).colorScheme.outline,
+                                width: isSelected ? 2 : 1,
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                              color: isSelected
+                                  ? Theme.of(context).colorScheme.primaryContainer
+                                  : null,
+                            ),
+                            child: Icon(
+                              icon,
+                              size: 24,
+                              color: isSelected
+                                  ? Theme.of(context).colorScheme.primary
+                                  : null,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.of(dialogContext).pop(),
+                        child: const Text('Abbrechen'),
+                      ),
+                      const SizedBox(width: 8),
+                      FilledButton(
+                        onPressed: () {
+                          final name = nameController.text.trim();
+                          if (name.isNotEmpty) {
+                            Navigator.of(dialogContext).pop();
+
+                            // Verwende Emoji wenn eingegeben, sonst Icon
+                            final emoji = emojiController.text.trim();
+                            final iconCode = useCustomEmoji && emoji.isNotEmpty
+                                ? emoji.runes.first
+                                : selectedIcon;
+
+                            cubit.addNewCategory(
+                              name,
+                              iconCodePoint: iconCode,
+                            );
+                            // Konfetti triggern wenn spezielle Namen
+                            if (_isEasterEggCategory(name)) {
+                              Future.delayed(const Duration(milliseconds: 500), () {
+                                _triggerConfetti();
+                              });
+                            }
+                          }
+                        },
+                        child: const Text('Erstellen'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Abbrechen'),
-            ),
-            FilledButton(
-              onPressed: () {
-                final name = controller.text.trim();
-                if (name.isNotEmpty) {
-                  Navigator.of(dialogContext).pop();
-                  cubit.addNewCategory(
-                    name,
-                    iconCodePoint: selectedIcon,
-                  );
-                  // Konfetti triggern wenn spezielle Namen
-                  if (_isEasterEggCategory(name)) {
-                    Future.delayed(const Duration(milliseconds: 500), () {
-                      _triggerConfetti();
-                    });
-                  }
-                }
-              },
-              child: const Text('Erstellen'),
-            ),
-          ],
         ),
       ),
     );
@@ -342,71 +482,96 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
   void _showCategoryOptionsDialog(BuildContext context, Category category) {
     showDialog(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text('Optionen für "${category.name}"'),
-        content: const Text('Wähle eine Aktion:'),
-        actions: [
-          TextButton(
-            onPressed: () async {
-              Navigator.of(dialogContext).pop();
-              
-              // Wenn die Kategorie geschützt ist, erfordere Authentifizierung
-              if (category.isProtected) {
-                final authenticated = 
-                    await BiometricAuthService.authenticateForCategory(category.name);
-                if (!context.mounted) return;
-                
-                if (!authenticated) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Authentifizierung erforderlich'),
-                      duration: Duration(seconds: 2),
+      builder: (dialogContext) => Dialog(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            maxWidth: 400,
+            maxHeight: 300,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Optionen für "${category.name}"',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                const SizedBox(height: 16),
+                const Text('Wähle eine Aktion:'),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.of(dialogContext).pop(),
+                      child: const Text('Abbrechen'),
                     ),
-                  );
-                  return;
-                }
-              }
-              
-              if (context.mounted) {
-                _showBiometricProtectionDialog(context, category);
-              }
-            },
-            child: Text(
-              category.isProtected ? '🔓 Schutz deaktivieren' : '🔒 Schutz aktivieren',
+                    const SizedBox(width: 8),
+                    TextButton(
+                      onPressed: () async {
+                        Navigator.of(dialogContext).pop();
+
+                        // Wenn die Kategorie geschützt ist, erfordere Authentifizierung zum Löschen
+                        if (category.isProtected) {
+                          final authenticated =
+                              await BiometricAuthService.authenticateForCategory(category.name);
+                          if (!context.mounted) return;
+
+                          if (!authenticated) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Authentifizierung erforderlich'),
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                            return;
+                          }
+                        }
+
+                        if (context.mounted) {
+                          _showDeleteDialog(context, category.id!, category.name);
+                        }
+                      },
+                      child: const Text('🗑️ Löschen'),
+                    ),
+                    const SizedBox(width: 8),
+                    TextButton(
+                      onPressed: () async {
+                        Navigator.of(dialogContext).pop();
+
+                        // Wenn die Kategorie geschützt ist, erfordere Authentifizierung
+                        if (category.isProtected) {
+                          final authenticated =
+                              await BiometricAuthService.authenticateForCategory(category.name);
+                          if (!context.mounted) return;
+
+                          if (!authenticated) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Authentifizierung erforderlich'),
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                            return;
+                          }
+                        }
+
+                        if (context.mounted) {
+                          _showBiometricProtectionDialog(context, category);
+                        }
+                      },
+                      child: Text(
+                        category.isProtected ? '🔓 Schutz deaktivieren' : '🔒 Schutz aktivieren',
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
-          TextButton(
-            onPressed: () async {
-              Navigator.of(dialogContext).pop();
-              
-              // Wenn die Kategorie geschützt ist, erfordere Authentifizierung zum Löschen
-              if (category.isProtected) {
-                final authenticated = 
-                    await BiometricAuthService.authenticateForCategory(category.name);
-                if (!context.mounted) return;
-                
-                if (!authenticated) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Authentifizierung erforderlich'),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                  return;
-                }
-              }
-              
-              if (context.mounted) {
-                _showDeleteDialog(context, category.id!, category.name);
-              }
-            },
-            child: const Text('🗑️ Löschen'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Abbrechen'),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -426,29 +591,61 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
   }
 
   void _showDeleteDialog(BuildContext context, int categoryId, String name) {
+    final state = context.read<HomeCubit>().state;
+    final subcats = (state is HomeLoaded) ? (state.subcategories[categoryId] ?? []) : [];
+    final hasSubcategories = subcats.isNotEmpty;
+
+    final contentText = hasSubcategories
+        ? 'Möchtest du "$name" wirklich löschen?\n\n'
+            '⚠️ WARNUNG: Diese Kategorie enthält ${subcats.length} Unterkategorie(n). '
+            'Alle Unterkategorien und deren Items werden ebenfalls gelöscht!'
+        : 'Möchtest du "$name" und alle darin enthaltenen Items wirklich löschen?';
+
     showDialog(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Kategorie löschen?'),
-        content: Text(
-          'Möchtest du "$name" und alle darin enthaltenen Items wirklich löschen?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Abbrechen'),
+      builder: (dialogContext) => Dialog(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            maxWidth: 450,
+            maxHeight: 300,
           ),
-          FilledButton(
-            onPressed: () {
-              Navigator.of(dialogContext).pop();
-              context.read<HomeCubit>().removeCategory(categoryId);
-            },
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Kategorie löschen?',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                const SizedBox(height: 16),
+                Text(contentText),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.of(dialogContext).pop(),
+                      child: const Text('Abbrechen'),
+                    ),
+                    const SizedBox(width: 8),
+                    FilledButton(
+                      onPressed: () {
+                        Navigator.of(dialogContext).pop();
+                        context.read<HomeCubit>().removeCategory(categoryId);
+                      },
+                      style: FilledButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.error,
+                      ),
+                      child: const Text('Löschen'),
+                    ),
+                  ],
+                ),
+              ],
             ),
-            child: const Text('Löschen'),
           ),
-        ],
+        ),
       ),
     );
   }

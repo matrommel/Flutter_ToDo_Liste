@@ -11,7 +11,21 @@
       "Bash(dir \"$LOCALAPPDATA\\Pub\\Cache\\hosted\\pub.dev\")",
       "Bash(flutter pub cache:*)",
       "Bash(flutter clean:*)",
-      "Bash(copy Matzo.png webfavicon.png)"
+      "Bash(copy Matzo.png webfavicon.png)",
+      "Bash(timeout /t 20 /nobreak)",
+      "Bash(exit 0)",
+      "Bash(timeout /t 25 /nobreak)",
+      "Bash(timeout /t 15 /nobreak)",
+      "Bash(tasklist:*)",
+      "Bash(findstr:*)",
+      "Bash(timeout /t 30 /nobreak)",
+      "Bash(taskkill:*)",
+      "Bash(del /Q c:UsersadminDocumentsreposFlutter_ToDo_Listelibdatadatasourceslocalcategory_local_datasource_web.dart)",
+      "Bash(flutter devices:*)",
+      "Bash(flutter build:*)",
+      "Bash(timeout /t 45 /nobreak)",
+      "Bash(del /Q c:UsersadminDocumentsreposFlutter_ToDo_Listelibpresentationcategorywidgetsitem_links_view.dart)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

@@ -41,6 +41,7 @@ class CategoryLocalDataSourceWeb implements ICategoryLocalDataSource {
       order: category.order,
       iconCodePoint: category.iconCodePoint,
       isProtected: category.isProtected,
+      parentCategoryId: category.parentCategoryId,
     );
     await _box!.put(id, categoryWithId.toMap());
     return id;
@@ -86,8 +87,90 @@ class CategoryLocalDataSourceWeb implements ICategoryLocalDataSource {
         order: category.order,
         iconCodePoint: category.iconCodePoint,
         isProtected: isProtected,
+        parentCategoryId: category.parentCategoryId,
       );
       await _box!.put(categoryId, updated.toMap());
     }
+  }
+
+  @override
+  Future<List<CategoryModel>> getTopLevelCategories() async {
+    await _ensureBox();
+    final categories = _box!.values
+        .map((map) => CategoryModel.fromMap(Map<String, dynamic>.from(map)))
+        .where((category) => category.parentCategoryId == null)
+        .toList();
+    categories.sort((a, b) => a.order.compareTo(b.order));
+    return categories;
+  }
+
+  @override
+  Future<List<CategoryModel>> getSubcategories(int parentId) async {
+    await _ensureBox();
+    final categories = _box!.values
+        .map((map) => CategoryModel.fromMap(Map<String, dynamic>.from(map)))
+        .where((category) => category.parentCategoryId == parentId)
+        .toList();
+    categories.sort((a, b) => a.order.compareTo(b.order));
+    return categories;
+  }
+
+  Future<Set<int>> _getAllSubcategoryIds(int parentId) async {
+    final ids = <int>{parentId};
+    final subcats = await getSubcategories(parentId);
+    for (final subcat in subcats) {
+      if (subcat.id != null) {
+        final subIds = await _getAllSubcategoryIds(subcat.id!);
+        ids.addAll(subIds);
+      }
+    }
+    return ids;
+  }
+
+  @override
+  Future<int> getRecursiveItemCount(int categoryId) async {
+    final categoryIds = await _getAllSubcategoryIds(categoryId);
+
+    // Zähle Items aus allen Kategorien
+    if (!Hive.isBoxOpen('todo_items')) {
+      await Hive.openBox<Map>('todo_items');
+    }
+    final todoBox = Hive.box<Map>('todo_items');
+
+    int count = 0;
+    for (final map in todoBox.values) {
+      final itemMap = Map<String, dynamic>.from(map);
+      if (categoryIds.contains(itemMap['category_id']) &&
+          (itemMap['is_completed'] as int) == 0) {
+        count++;
+      }
+    }
+    return count;
+  }
+
+  @override
+  Future<int> getRecursiveTotalItemCount(int categoryId) async {
+    final categoryIds = await _getAllSubcategoryIds(categoryId);
+
+    // Zähle ALLE Items aus allen Kategorien (inkl. completed)
+    if (!Hive.isBoxOpen('todo_items')) {
+      await Hive.openBox<Map>('todo_items');
+    }
+    final todoBox = Hive.box<Map>('todo_items');
+
+    int count = 0;
+    for (final map in todoBox.values) {
+      final itemMap = Map<String, dynamic>.from(map);
+      if (categoryIds.contains(itemMap['category_id'])) {
+        count++;
+      }
+    }
+    return count;
+  }
+
+  @override
+  Future<int> getSubcategoryCount(int categoryId) async {
+    final subcategories = await getSubcategories(categoryId);
+    return subcategories.length;
   }
 }

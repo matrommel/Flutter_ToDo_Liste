@@ -2,6 +2,7 @@
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:matzo/domain/entities/todo_item.dart';
+import 'package:matzo/domain/usecases/category/get_subcategories.dart';
 import 'package:matzo/domain/usecases/todo_item/add_todo_item.dart';
 import 'package:matzo/domain/usecases/todo_item/delete_todo_item.dart';
 import 'package:matzo/domain/usecases/todo_item/get_todo_items.dart';
@@ -13,6 +14,7 @@ import 'category_state.dart';
 
 class CategoryCubit extends Cubit<CategoryState> {
   final GetTodoItems getTodoItems;
+  final GetSubcategories getSubcategories;
   final AddTodoItem addTodoItem;
   final ToggleTodoItem toggleTodoItem;
   final UpdateItemCount updateItemCount;
@@ -23,10 +25,12 @@ class CategoryCubit extends Cubit<CategoryState> {
   int? _currentCategoryId;
   TodoItem? _lastDeletedItem;
   bool _showCompleted = true;
+  bool _showSubcategories = true;
   bool _sortAscending = true;
 
   CategoryCubit({
     required this.getTodoItems,
+    required this.getSubcategories,
     required this.addTodoItem,
     required this.toggleTodoItem,
     required this.updateItemCount,
@@ -41,10 +45,13 @@ class CategoryCubit extends Cubit<CategoryState> {
     emit(CategoryLoading());
     try {
       final items = await getTodoItems(categoryId);
+      final subcategories = await getSubcategories(categoryId);
       emit(
         CategoryLoaded(
           items: _sortedItems(items),
+          subcategories: subcategories,
           showCompleted: _showCompleted,
+          showSubcategories: _showSubcategories,
           sortAscending: _sortAscending,
         ),
       );
@@ -284,7 +291,9 @@ class CategoryCubit extends Cubit<CategoryState> {
       emit(
         CategoryLoaded(
           items: combined, // Direkt übergeben, NICHT nochmal mit _sortedItems sortieren!
+          subcategories: currentState.subcategories,
           showCompleted: _showCompleted,
+          showSubcategories: _showSubcategories,
           sortAscending: _sortAscending,
         ),
       );
@@ -297,7 +306,25 @@ class CategoryCubit extends Cubit<CategoryState> {
         emit(
           CategoryLoaded(
             items: current.items,
+            subcategories: current.subcategories,
             showCompleted: _showCompleted,
+            showSubcategories: _showSubcategories,
+            sortAscending: _sortAscending,
+          ),
+        );
+      }
+    }
+
+  void toggleShowSubcategories() {
+      if (state is CategoryLoaded) {
+        _showSubcategories = !_showSubcategories;
+        final current = state as CategoryLoaded;
+        emit(
+          CategoryLoaded(
+            items: current.items,
+            subcategories: current.subcategories,
+            showCompleted: _showCompleted,
+            showSubcategories: _showSubcategories,
             sortAscending: _sortAscending,
           ),
         );
@@ -311,7 +338,9 @@ class CategoryCubit extends Cubit<CategoryState> {
         emit(
           CategoryLoaded(
             items: _sortedItems(current.items),
+            subcategories: current.subcategories,
             showCompleted: _showCompleted,
+            showSubcategories: _showSubcategories,
             sortAscending: _sortAscending,
           ),
         );

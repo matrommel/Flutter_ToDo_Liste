@@ -8,7 +8,7 @@ class AddCategory {
 
   AddCategory(this.repository);
 
-  Future<int> call(String name, {int? iconCodePoint}) async {
+  Future<int> call(String name, {int? iconCodePoint, int? parentCategoryId}) async {
     // Validierung
     final trimmedName = name.trim();
     if (trimmedName.isEmpty) {
@@ -22,6 +22,7 @@ class AddCategory {
       name: trimmedName,
       createdAt: DateTime.now(),
       iconCodePoint: iconCodePoint,
+      parentCategoryId: parentCategoryId,
     );
 
     return await repository.addCategory(category);

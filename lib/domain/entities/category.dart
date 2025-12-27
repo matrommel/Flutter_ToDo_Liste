@@ -10,6 +10,7 @@ class Category extends Equatable {
   final int order;
   final int? iconCodePoint;
   final bool isProtected; // Biometrischer Schutz aktiviert
+  final int? parentCategoryId; // NULL = Top-Level Kategorie
 
   const Category({
     this.id,
@@ -18,8 +19,9 @@ class Category extends Equatable {
     this.order = 0,
     this.iconCodePoint,
     this.isProtected = false,
+    this.parentCategoryId,
   });
 
   @override
-  List<Object?> get props => [id, name, createdAt, order, iconCodePoint, isProtected];
+  List<Object?> get props => [id, name, createdAt, order, iconCodePoint, isProtected, parentCategoryId];
 }

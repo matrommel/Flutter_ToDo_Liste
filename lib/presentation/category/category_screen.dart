@@ -8,35 +8,105 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/di/injection.dart';
+import '../../domain/usecases/category/add_category.dart';
+import '../../domain/usecases/category/get_recursive_item_count.dart';
+import '../../domain/usecases/category/get_recursive_total_item_count.dart';
 import 'bloc/category_cubit.dart';
 import 'bloc/category_state.dart';
 import 'widgets/add_item_dialog.dart';
 import 'widgets/edit_item_dialog.dart';
+import 'widgets/subcategory_tile.dart';
 import 'widgets/todo_item_tile.dart';
 
 class CategoryScreen extends StatelessWidget {
   final int categoryId;
   final String categoryName;
+  final List<Map<String, dynamic>> breadcrumbs;
 
   const CategoryScreen({
     super.key,
     required this.categoryId,
     required this.categoryName,
+    this.breadcrumbs = const [],
   });
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => getIt<CategoryCubit>()..loadItems(categoryId),
-      child: _CategoryScreenContent(categoryName: categoryName),
+      child: _CategoryScreenContent(
+        categoryId: categoryId,
+        categoryName: categoryName,
+        breadcrumbs: breadcrumbs,
+      ),
     );
   }
 }
 
 class _CategoryScreenContent extends StatelessWidget {
+  final int categoryId;
   final String categoryName;
+  final List<Map<String, dynamic>> breadcrumbs;
 
-  const _CategoryScreenContent({required this.categoryName});
+  const _CategoryScreenContent({
+    required this.categoryId,
+    required this.categoryName,
+    this.breadcrumbs = const [],
+  });
+
+  static const List<IconData> _availableIcons = [
+    Icons.list_alt,
+    Icons.shopping_cart,
+    Icons.work,
+    Icons.home,
+    Icons.fitness_center,
+    Icons.flight_takeoff,
+    Icons.school,
+    Icons.favorite_outline,
+    Icons.bookmark,
+    Icons.restaurant,
+    Icons.local_cafe,
+    Icons.local_pizza,
+    Icons.cake,
+    Icons.breakfast_dining,
+    Icons.local_bar,
+    Icons.icecream,
+    Icons.medical_services,
+    Icons.healing,
+    Icons.favorite,
+    Icons.pool,
+    Icons.directions_bike,
+    Icons.directions_run,
+    Icons.hiking,
+    Icons.surfing,
+    Icons.snowboarding,
+    Icons.music_note,
+    Icons.headphones,
+    Icons.movie,
+    Icons.videogame_asset,
+    Icons.attractions,
+    Icons.book,
+    Icons.science,
+    Icons.palette,
+    Icons.photo_camera,
+    Icons.videocam,
+    Icons.beach_access,
+    Icons.forest,
+    Icons.pets,
+    Icons.build,
+    Icons.construction,
+    Icons.electrical_services,
+    Icons.store,
+    Icons.storefront,
+    Icons.attach_money,
+    Icons.account_balance,
+    Icons.savings,
+    Icons.card_giftcard,
+    Icons.redeem,
+    Icons.celebration,
+    Icons.party_mode,
+    Icons.nightlife,
+  ];
 
   /// Easter Egg: Spezielle Namen haben Konfetti
   bool _isEasterEggCategory() {
@@ -48,7 +118,9 @@ class _CategoryScreenContent extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text(categoryName),
+          title: breadcrumbs.isEmpty
+              ? Text(categoryName)
+              : _buildBreadcrumbs(context),
           actions: [
             // Bulk-Actions Menu
             PopupMenuButton<String>(
@@ -62,6 +134,9 @@ class _CategoryScreenContent extends StatelessWidget {
                   case 'toggle_completed':
                     context.read<CategoryCubit>().toggleShowCompleted();
                     break;
+                  case 'toggle_subcategories':
+                    context.read<CategoryCubit>().toggleShowSubcategories();
+                    break;
                   case 'mark_all_done':
                     _showMarkAllDoneDialog(context);
                     break;
@@ -73,6 +148,7 @@ class _CategoryScreenContent extends StatelessWidget {
               itemBuilder: (context) {
                 final state = context.read<CategoryCubit>().state;
                 final showCompleted = state is CategoryLoaded ? state.showCompleted : true;
+                final showSubcategories = state is CategoryLoaded ? state.showSubcategories : true;
                 final sortAscending = state is CategoryLoaded ? state.sortAscending : true;
 
                 return [
@@ -93,6 +169,16 @@ class _CategoryScreenContent extends StatelessWidget {
                         Icon(showCompleted ? Icons.visibility_off : Icons.visibility),
                         const SizedBox(width: 12),
                         Text(showCompleted ? 'Abgehakte Items ausblenden' : 'Abgehakte Items einblenden'),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'toggle_subcategories',
+                    child: Row(
+                      children: [
+                        Icon(showSubcategories ? Icons.folder_off : Icons.folder),
+                        const SizedBox(width: 12),
+                        Text(showSubcategories ? 'Unterkategorien ausblenden' : 'Unterkategorien einblenden'),
                       ],
                     ),
                   ),
@@ -118,6 +204,11 @@ class _CategoryScreenContent extends StatelessWidget {
                   ),
                 ];
               },
+            ),
+            IconButton(
+              icon: const Icon(Icons.create_new_folder),
+              onPressed: () => _showAddSubcategoryDialog(context),
+              tooltip: 'Unterkategorie hinzufügen',
             ),
             IconButton(
               icon: const Icon(Icons.add),
@@ -150,8 +241,9 @@ class _CategoryScreenContent extends StatelessWidget {
           if (state is CategoryLoaded) {
             final openItems = state.openItems;
             final completedItems = state.completedItems;
+            final subcategories = state.subcategories;
 
-            if (openItems.isEmpty && completedItems.isEmpty) {
+            if (openItems.isEmpty && completedItems.isEmpty && subcategories.isEmpty) {
               return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -179,6 +271,57 @@ class _CategoryScreenContent extends StatelessWidget {
 
             return ListView(
               children: [
+                // Unterkategorien
+                if (state.showSubcategories && subcategories.isNotEmpty) ...[
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.folder_outlined,
+                          size: 20,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Unterkategorien (${subcategories.length})',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                color: Theme.of(context).colorScheme.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  ...subcategories.map((subcat) {
+                    return FutureBuilder<List<int>>(
+                      future: Future.wait([
+                        getIt<GetRecursiveItemCount>()(subcat.id!),
+                        getIt<GetRecursiveTotalItemCount>()(subcat.id!),
+                      ]),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return SubcategoryTile(
+                            category: subcat,
+                            openItemsCount: 0,
+                            totalItemsCount: 0,
+                            onTap: () => _navigateToSubcategory(context, subcat),
+                          );
+                        }
+                        final openCount = snapshot.data![0];
+                        final totalCount = snapshot.data![1];
+                        return SubcategoryTile(
+                          category: subcat,
+                          openItemsCount: openCount,
+                          totalItemsCount: totalCount,
+                          onTap: () => _navigateToSubcategory(context, subcat),
+                        );
+                      },
+                    );
+                  }),
+                  const SizedBox(height: 8),
+                ],
+
                 // Offene Items mit Reorder
                 if (openItems.isNotEmpty) ...[
                   Padding(
@@ -320,6 +463,212 @@ class _CategoryScreenContent extends StatelessWidget {
     }
   }
 
+  void _showAddSubcategoryDialog(BuildContext context) {
+    final nameController = TextEditingController();
+    final emojiController = TextEditingController();
+    int? selectedIcon = _availableIcons.first.codePoint;
+    bool useCustomEmoji = false;
+    final cubit = context.read<CategoryCubit>();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (builderContext, setState) => Dialog(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              maxWidth: 500,
+              maxHeight: 600,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Unterkategorie hinzufügen',
+                    style: Theme.of(builderContext).textTheme.headlineSmall,
+                  ),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                TextField(
+                  controller: nameController,
+                  autofocus: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Name',
+                    hintText: 'z.B. Salami',
+                  ),
+                  textCapitalization: TextCapitalization.sentences,
+                  onSubmitted: (value) {
+                    if (value.trim().isNotEmpty) {
+                      Navigator.of(dialogContext).pop();
+                      final emoji = emojiController.text.trim();
+                      final iconCode = useCustomEmoji && emoji.isNotEmpty
+                          ? emoji.runes.first
+                          : selectedIcon ?? _availableIcons.first.codePoint;
+                      _addSubcategory(context, cubit, value, iconCode);
+                    }
+                  },
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        useCustomEmoji ? 'Eigenes Emoji' : 'Icon auswählen',
+                        style: Theme.of(builderContext).textTheme.titleSmall,
+                      ),
+                    ),
+                    TextButton.icon(
+                      onPressed: () => setState(() {
+                        useCustomEmoji = !useCustomEmoji;
+                        if (useCustomEmoji) {
+                          selectedIcon = null;
+                        } else {
+                          selectedIcon = _availableIcons.first.codePoint;
+                          emojiController.clear();
+                        }
+                      }),
+                      icon: Icon(useCustomEmoji ? Icons.apps : Icons.emoji_emotions),
+                      label: Text(useCustomEmoji ? 'Icons' : 'Emoji'),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                if (useCustomEmoji)
+                  TextField(
+                    controller: emojiController,
+                    decoration: const InputDecoration(
+                      labelText: 'Emoji eingeben',
+                      hintText: '🍕',
+                      border: OutlineInputBorder(),
+                    ),
+                    maxLength: 2,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 32),
+                  )
+                else
+                  SizedBox(
+                    height: 200,
+                    child: GridView.builder(
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 6,
+                        childAspectRatio: 1,
+                        crossAxisSpacing: 4,
+                        mainAxisSpacing: 4,
+                      ),
+                      itemCount: _availableIcons.length,
+                      itemBuilder: (context, index) {
+                        final icon = _availableIcons[index];
+                        final isSelected = icon.codePoint == selectedIcon;
+                        return GestureDetector(
+                          onTap: () => setState(() {
+                            selectedIcon = icon.codePoint;
+                          }),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: isSelected
+                                    ? Theme.of(builderContext).colorScheme.primary
+                                    : Theme.of(builderContext).colorScheme.outline,
+                                width: isSelected ? 2 : 1,
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                              color: isSelected
+                                  ? Theme.of(builderContext).colorScheme.primaryContainer
+                                  : null,
+                            ),
+                            child: Icon(
+                              icon,
+                              size: 24,
+                              color: isSelected
+                                  ? Theme.of(builderContext).colorScheme.primary
+                                  : null,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.of(dialogContext).pop(),
+                        child: const Text('Abbrechen'),
+                      ),
+                      const SizedBox(width: 8),
+                      FilledButton(
+                        onPressed: () {
+                          final name = nameController.text.trim();
+                          if (name.isNotEmpty) {
+                            Navigator.of(dialogContext).pop();
+
+                            // Verwende Emoji wenn eingegeben, sonst Icon
+                            final emoji = emojiController.text.trim();
+                            final iconCode = useCustomEmoji && emoji.isNotEmpty
+                                ? emoji.runes.first
+                                : selectedIcon ?? _availableIcons.first.codePoint;
+
+                            _addSubcategory(context, cubit, name, iconCode);
+                          }
+                        },
+                        child: const Text('Erstellen'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _addSubcategory(BuildContext context, CategoryCubit cubit, String name, int iconCodePoint) async {
+    final addCategory = getIt<AddCategory>();
+    try {
+      await addCategory(
+        name,
+        iconCodePoint: iconCodePoint,
+        parentCategoryId: categoryId,
+      );
+
+      if (context.mounted) {
+        // Reload category to show new subcategory
+        cubit.loadItems(categoryId);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('✓ Unterkategorie "$name" erstellt'),
+            duration: const Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Fehler: $e'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    }
+  }
+
   void _showEditDialog(BuildContext context, item) async {
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
@@ -441,5 +790,83 @@ class _CategoryScreenContent extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildBreadcrumbs(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                ...breadcrumbs.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final crumb = entry.value;
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      InkWell(
+                        onTap: () {
+                          // Pop back to this level
+                          final popCount = breadcrumbs.length - index;
+                          for (int i = 0; i < popCount; i++) {
+                            Navigator.of(context).pop();
+                          }
+                        },
+                        child: Text(
+                          crumb['name'] as String,
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                              ),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.chevron_right,
+                        size: 20,
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                      ),
+                      const SizedBox(width: 4),
+                    ],
+                  );
+                }),
+                Text(
+                  categoryName,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _navigateToSubcategory(BuildContext context, category) async {
+    final newBreadcrumbs = [
+      ...breadcrumbs,
+      {'id': categoryId, 'name': categoryName},
+    ];
+
+    final cubit = context.read<CategoryCubit>();
+
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => CategoryScreen(
+          categoryId: category.id!,
+          categoryName: category.name,
+          breadcrumbs: newBreadcrumbs,
+        ),
+      ),
+    );
+
+    // Reload category after returning from subcategory to refresh progress
+    if (context.mounted) {
+      cubit.loadItems(categoryId);
+    }
   }
 }

@@ -19,6 +19,11 @@ import 'package:matzo/domain/usecases/category/add_category.dart';
 import 'package:matzo/domain/usecases/category/delete_category.dart';
 import 'package:matzo/domain/usecases/category/get_categories.dart';
 import 'package:matzo/domain/usecases/category/get_category_item_count.dart';
+import 'package:matzo/domain/usecases/category/get_recursive_item_count.dart';
+import 'package:matzo/domain/usecases/category/get_recursive_total_item_count.dart';
+import 'package:matzo/domain/usecases/category/get_subcategories.dart';
+import 'package:matzo/domain/usecases/category/get_subcategory_count.dart';
+import 'package:matzo/domain/usecases/category/get_top_level_categories.dart';
 import 'package:matzo/domain/usecases/category/reorder_categories.dart';
 import 'package:matzo/domain/usecases/category/update_category_protection.dart';
 import 'package:matzo/domain/usecases/todo_item/add_todo_item.dart';
@@ -45,17 +50,19 @@ Future<void> setupDependencies() async {
   // Cubits (Factory = neue Instanz bei jedem Aufruf)
   getIt.registerFactory(
     () => HomeCubit(
-      getCategories: getIt(),
+      getTopLevelCategories: getIt(),
+      getSubcategories: getIt(),
       addCategory: getIt(),
       deleteCategory: getIt(),
-      getCategoryItemCount: getIt(),
-      getTodoItems: getIt(),
+      getRecursiveItemCount: getIt(),
+      getRecursiveTotalItemCount: getIt(),
     ),
   );
 
   getIt.registerFactory(
     () => CategoryCubit(
       getTodoItems: getIt(),
+      getSubcategories: getIt(),
       addTodoItem: getIt(),
       toggleTodoItem: getIt(),
       updateItemCount: getIt(),
@@ -68,9 +75,14 @@ Future<void> setupDependencies() async {
   // ============ Domain Layer ============
   // Use Cases
   getIt.registerLazySingleton(() => GetCategories(getIt()));
+  getIt.registerLazySingleton(() => GetTopLevelCategories(getIt()));
+  getIt.registerLazySingleton(() => GetSubcategories(getIt()));
   getIt.registerLazySingleton(() => AddCategory(getIt()));
   getIt.registerLazySingleton(() => DeleteCategory(getIt()));
   getIt.registerLazySingleton(() => GetCategoryItemCount(getIt()));
+  getIt.registerLazySingleton(() => GetRecursiveItemCount(getIt()));
+  getIt.registerLazySingleton(() => GetRecursiveTotalItemCount(getIt()));
+  getIt.registerLazySingleton(() => GetSubcategoryCount(getIt()));
   getIt.registerLazySingleton(() => ReorderCategories(getIt()));
   getIt.registerLazySingleton(() => UpdateCategoryProtection(getIt()));
 

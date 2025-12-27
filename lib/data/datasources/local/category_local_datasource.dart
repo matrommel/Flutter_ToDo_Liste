@@ -73,4 +73,82 @@ class CategoryLocalDataSource implements ICategoryLocalDataSource {
       whereArgs: [categoryId],
     );
   }
+
+  @override
+  Future<List<CategoryModel>> getTopLevelCategories() async {
+    final db = await dbHelper.database;
+    final maps = await db.query(
+      'categories',
+      where: 'parent_category_id IS NULL',
+      orderBy: 'order_num ASC',
+    );
+    return maps.map((map) => CategoryModel.fromMap(map)).toList();
+  }
+
+  @override
+  Future<List<CategoryModel>> getSubcategories(int parentId) async {
+    final db = await dbHelper.database;
+    final maps = await db.query(
+      'categories',
+      where: 'parent_category_id = ?',
+      whereArgs: [parentId],
+      orderBy: 'order_num ASC',
+    );
+    return maps.map((map) => CategoryModel.fromMap(map)).toList();
+  }
+
+  @override
+  Future<int> getRecursiveItemCount(int categoryId) async {
+    final db = await dbHelper.database;
+
+    // Rekursive CTE für alle Unter-Kategorien
+    final result = await db.rawQuery('''
+      WITH RECURSIVE subcategories AS (
+        SELECT id FROM categories WHERE id = ?
+        UNION ALL
+        SELECT c.id FROM categories c
+        INNER JOIN subcategories s ON c.parent_category_id = s.id
+      )
+      SELECT COUNT(*) as count FROM todo_items
+      WHERE category_id IN (SELECT id FROM subcategories)
+      AND is_completed = 0
+    ''', [categoryId]);
+
+    if (result.isEmpty) return 0;
+    final count = result.first['count'];
+    return (count is int) ? count : int.tryParse(count.toString()) ?? 0;
+  }
+
+  @override
+  Future<int> getRecursiveTotalItemCount(int categoryId) async {
+    final db = await dbHelper.database;
+
+    // Rekursive CTE für alle Unter-Kategorien - ALLE Items (inkl. completed)
+    final result = await db.rawQuery('''
+      WITH RECURSIVE subcategories AS (
+        SELECT id FROM categories WHERE id = ?
+        UNION ALL
+        SELECT c.id FROM categories c
+        INNER JOIN subcategories s ON c.parent_category_id = s.id
+      )
+      SELECT COUNT(*) as count FROM todo_items
+      WHERE category_id IN (SELECT id FROM subcategories)
+    ''', [categoryId]);
+
+    if (result.isEmpty) return 0;
+    final count = result.first['count'];
+    return (count is int) ? count : int.tryParse(count.toString()) ?? 0;
+  }
+
+  @override
+  Future<int> getSubcategoryCount(int categoryId) async {
+    final db = await dbHelper.database;
+    final result = await db.rawQuery(
+      'SELECT COUNT(*) as count FROM categories WHERE parent_category_id = ?',
+      [categoryId],
+    );
+    if (result.isEmpty) return 0;
+    final count = result.first['count'];
+    return (count is int) ? count : int.tryParse(count.toString()) ?? 0;
+  }
 }

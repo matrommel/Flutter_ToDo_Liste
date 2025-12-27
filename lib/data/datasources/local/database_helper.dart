@@ -30,7 +30,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 5,
+      version: 6,
       onCreate: _createDB,
       onUpgrade: _onUpgrade,
       onConfigure: _onConfigure,
@@ -51,7 +51,9 @@ class DatabaseHelper {
         created_at INTEGER NOT NULL,
         order_num INTEGER DEFAULT 0,
         icon_code INTEGER,
-        is_protected INTEGER DEFAULT 0
+        is_protected INTEGER DEFAULT 0,
+        parent_category_id INTEGER,
+        FOREIGN KEY (parent_category_id) REFERENCES categories (id) ON DELETE CASCADE
       )
     ''');
 
@@ -96,6 +98,12 @@ class DatabaseHelper {
       // Neue Spalten für Beschreibung und Links
       await db.execute('ALTER TABLE todo_items ADD COLUMN description TEXT');
       await db.execute('ALTER TABLE todo_items ADD COLUMN links TEXT'); // JSON Array als String
+    }
+    if (oldVersion < 6) {
+      // Neue Spalte für Verschachtelung von Kategorien
+      await db.execute('ALTER TABLE categories ADD COLUMN parent_category_id INTEGER');
+      // Index für bessere Performance bei Hierarchie-Abfragen
+      await db.execute('CREATE INDEX idx_categories_parent_id ON categories(parent_category_id)');
     }
   }
 

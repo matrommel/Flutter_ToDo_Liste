@@ -7,6 +7,9 @@ class CategoryCard extends StatelessWidget {
   final Category category;
   final int openItemsCount;
   final int totalItemsCount;
+  final List<Category> subcategories;
+  final Map<int, int> subcategoryOpenCounts;
+  final Map<int, int> subcategoryTotalCounts;
   final VoidCallback onTap;
   final VoidCallback onLongPress;
 
@@ -15,6 +18,9 @@ class CategoryCard extends StatelessWidget {
     required this.category,
     required this.openItemsCount,
     required this.totalItemsCount,
+    this.subcategories = const [],
+    this.subcategoryOpenCounts = const {},
+    this.subcategoryTotalCounts = const {},
     required this.onTap,
     required this.onLongPress,
   });
@@ -43,10 +49,11 @@ class CategoryCard extends StatelessWidget {
                       color: Theme.of(context).colorScheme.primaryContainer,
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Icon(
-                      _getIconForCategory(category),
-                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    child: _buildCategoryIcon(
+                      context,
+                      category,
                       size: 20,
+                      color: Theme.of(context).colorScheme.onPrimaryContainer,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -72,8 +79,15 @@ class CategoryCard extends StatelessWidget {
                     ),
                 ],
               ),
+
+              // Subcategory-Quadrate
+              if (subcategories.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                _buildSubcategorySquares(context),
+              ],
+
               const Spacer(),
-              
+
               // Fortschritt Text
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -129,20 +143,128 @@ class CategoryCard extends StatelessWidget {
     }
   }
 
-  IconData _getIconForCategory(Category category) {
+  Widget _buildSubcategorySquares(BuildContext context) {
+    const maxVisible = 3;
+    final visibleSubcats = subcategories.take(maxVisible).toList();
+    final remainingCount = subcategories.length - maxVisible;
+
+    return SizedBox(
+      height: 32,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            ...visibleSubcats.map((subcat) {
+              final openCount = subcategoryOpenCounts[subcat.id] ?? 0;
+              final totalCount = subcategoryTotalCounts[subcat.id] ?? 0;
+              final completedCount = totalCount - openCount;
+              final progress = totalCount > 0 ? completedCount / totalCount : 0.0;
+
+              return Padding(
+                padding: const EdgeInsets.only(right: 6),
+                child: SizedBox(
+                  width: 32,
+                  height: 32,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // Hintergrund-Kreis
+                      CircularProgressIndicator(
+                        value: 1.0,
+                        strokeWidth: 3,
+                        backgroundColor: Colors.transparent,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Theme.of(context).colorScheme.surfaceContainerHighest,
+                        ),
+                      ),
+                      // Fortschritts-Kreis
+                      CircularProgressIndicator(
+                        value: progress,
+                        strokeWidth: 3,
+                        backgroundColor: Colors.transparent,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          _getProgressColor(context, progress),
+                        ),
+                      ),
+                      // Icon in der Mitte
+                      _buildCategoryIcon(
+                        context,
+                        subcat,
+                        size: 14,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+            if (remainingCount > 0)
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Center(
+                  child: Text(
+                    '+$remainingCount',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryIcon(
+    BuildContext context,
+    Category category, {
+    required double size,
+    Color? color,
+  }) {
     if (category.iconCodePoint != null) {
-      return IconData(category.iconCodePoint!, fontFamily: 'MaterialIcons');
+      final codePoint = category.iconCodePoint!;
+
+      // Emojis haben typischerweise höhere Unicode-Werte (> 0x1F000)
+      // Material Icons liegen im Private Use Area (0xE000-0xF8FF)
+      final isEmoji = codePoint > 0x1F000 || (codePoint > 0x10000 && codePoint < 0x1F000);
+
+      if (isEmoji) {
+        return Text(
+          String.fromCharCode(codePoint),
+          style: TextStyle(
+            fontSize: size * 0.8,
+            height: 1.0, // Verhindert zusätzlichen vertikalen Spacing
+          ),
+        );
+      } else {
+        return Icon(
+          IconData(codePoint, fontFamily: 'MaterialIcons'),
+          size: size,
+          color: color,
+        );
+      }
     }
 
+    // Fallback: Name-basierte Icon-Erkennung
     final lowerName = category.name.toLowerCase();
-    if (lowerName.contains('einkauf')) return Icons.shopping_cart;
-    if (lowerName.contains('arbeit')) return Icons.work;
-    if (lowerName.contains('haushalt')) return Icons.home;
-    if (lowerName.contains('sport')) return Icons.fitness_center;
-    if (lowerName.contains('reise')) return Icons.flight;
-    if (lowerName.contains('projekt')) return Icons.folder;
-    if (lowerName.contains('buch') || lowerName.contains('lesen')) return Icons.book;
+    IconData iconData = Icons.list_alt;
 
-    return Icons.list_alt;
+    if (lowerName.contains('einkauf')) iconData = Icons.shopping_cart;
+    else if (lowerName.contains('arbeit')) iconData = Icons.work;
+    else if (lowerName.contains('haushalt')) iconData = Icons.home;
+    else if (lowerName.contains('sport')) iconData = Icons.fitness_center;
+    else if (lowerName.contains('reise')) iconData = Icons.flight;
+    else if (lowerName.contains('projekt')) iconData = Icons.folder;
+    else if (lowerName.contains('buch') || lowerName.contains('lesen')) iconData = Icons.book;
+
+    return Icon(iconData, size: size, color: color);
   }
 }

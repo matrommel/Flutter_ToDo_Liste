@@ -10,6 +10,7 @@ class CategoryModel extends Category {
     super.order,
     super.iconCodePoint,
     super.isProtected,
+    super.parentCategoryId,
   });
 
   // Von Domain Entity erstellen
@@ -21,6 +22,7 @@ class CategoryModel extends Category {
       order: category.order,
       iconCodePoint: category.iconCodePoint,
       isProtected: category.isProtected,
+      parentCategoryId: category.parentCategoryId,
     );
   }
 
@@ -33,6 +35,7 @@ class CategoryModel extends Category {
       order: map['order_num'] as int? ?? 0,
       iconCodePoint: map['icon_code'] as int?,
       isProtected: (map['is_protected'] as int? ?? 0) == 1,
+      parentCategoryId: map['parent_category_id'] as int?,
     );
   }
 
@@ -45,6 +48,7 @@ class CategoryModel extends Category {
       'order_num': order,
       'icon_code': iconCodePoint,
       'is_protected': isProtected ? 1 : 0,
+      'parent_category_id': parentCategoryId,
     };
   }
 }

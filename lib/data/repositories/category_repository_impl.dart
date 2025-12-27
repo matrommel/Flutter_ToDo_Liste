@@ -46,4 +46,29 @@ class CategoryRepositoryImpl implements CategoryRepository {
   Future<void> updateCategoryProtection(int categoryId, bool isProtected) async {
     await localDataSource.updateCategoryProtection(categoryId, isProtected);
   }
+
+  @override
+  Future<List<Category>> getTopLevelCategories() async {
+    return await localDataSource.getTopLevelCategories();
+  }
+
+  @override
+  Future<List<Category>> getSubcategories(int parentId) async {
+    return await localDataSource.getSubcategories(parentId);
+  }
+
+  @override
+  Future<int> getRecursiveItemCount(int categoryId) async {
+    return await localDataSource.getRecursiveItemCount(categoryId);
+  }
+
+  @override
+  Future<int> getRecursiveTotalItemCount(int categoryId) async {
+    return await localDataSource.getRecursiveTotalItemCount(categoryId);
+  }
+
+  @override
+  Future<int> getSubcategoryCount(int categoryId) async {
+    return await localDataSource.getSubcategoryCount(categoryId);
+  }
 }
