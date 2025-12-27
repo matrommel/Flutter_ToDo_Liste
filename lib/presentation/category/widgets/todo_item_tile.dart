@@ -3,10 +3,11 @@
 // - Größere Touch Targets (48x48px minimum)
 // - Bestätigung bei Swipe-to-Delete
 // - Besseres visuelles Feedback
-// - Tap auf Titel öffnet Edit-Dialog
 
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:flutter_linkify/flutter_linkify.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:matzo/domain/entities/todo_item.dart';
 
 class TodoItemTile extends StatelessWidget {
@@ -73,7 +74,7 @@ class TodoItemTile extends StatelessWidget {
                 
                 const SizedBox(width: 4),
                 
-                // Titel
+                // Titel und Beschreibung
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -82,6 +83,7 @@ class TodoItemTile extends StatelessWidget {
                         item.title,
                         style: TextStyle(
                           fontSize: 16,
+                          fontWeight: FontWeight.w500,
                           decoration: item.isCompleted
                               ? TextDecoration.lineThrough
                               : null,
@@ -90,12 +92,30 @@ class TodoItemTile extends StatelessWidget {
                               : Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
+                      // Beschreibungsvorschau
+                      if (item.description != null && item.description!.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text(
+                            item.description!,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ),
                       if (onEdit != null)
-                        Text(
-                          'Tippen zum Bearbeiten',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text(
+                            'Tippen zum Bearbeiten',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            ),
                           ),
                         ),
                     ],

@@ -2,8 +2,9 @@
 
 import 'package:matzo/data/models/todo_item_model.dart';
 import 'package:matzo/data/datasources/local/database_helper.dart';
+import 'package:matzo/data/datasources/local/i_todo_item_local_datasource.dart';
 
-class TodoItemLocalDataSource {
+class TodoItemLocalDataSource implements ITodoItemLocalDataSource {
   final DatabaseHelper dbHelper;
 
   TodoItemLocalDataSource(this.dbHelper);

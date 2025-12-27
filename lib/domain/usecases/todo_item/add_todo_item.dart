@@ -13,6 +13,7 @@ class AddTodoItem {
     required String title,
     int count = 1,
     int order = 0,
+    String? description,
   }) async {
     // Validierung
     if (title.trim().isEmpty) {
@@ -31,6 +32,7 @@ class AddTodoItem {
       count: count,
       order: order,
       createdAt: DateTime.now(),
+      description: description,
     );
 
     return await repository.addItem(item);

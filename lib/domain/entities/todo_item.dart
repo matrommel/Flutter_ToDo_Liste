@@ -11,6 +11,8 @@ class TodoItem extends Equatable {
   final bool isCompleted;
   final DateTime createdAt;
   final DateTime? completedAt;
+  final String? description; // Mehrfach-Zeilen Beschreibung mit Bullet Points
+  final List<String>? links; // Liste von URLs
 
   const TodoItem({
     this.id,
@@ -21,6 +23,8 @@ class TodoItem extends Equatable {
     this.isCompleted = false,
     required this.createdAt,
     this.completedAt,
+    this.description,
+    this.links,
   });
 
   // Kopieren mit geänderten Werten
@@ -33,6 +37,8 @@ class TodoItem extends Equatable {
     bool? isCompleted,
     DateTime? createdAt,
     DateTime? completedAt,
+    String? description,
+    List<String>? links,
   }) {
     return TodoItem(
       id: id ?? this.id,
@@ -43,6 +49,8 @@ class TodoItem extends Equatable {
       isCompleted: isCompleted ?? this.isCompleted,
       createdAt: createdAt ?? this.createdAt,
       completedAt: completedAt ?? this.completedAt,
+      description: description ?? this.description,
+      links: links ?? this.links,
     );
   }
 
@@ -56,5 +64,7 @@ class TodoItem extends Equatable {
         isCompleted,
         createdAt,
         completedAt,
+        description,
+        links,
       ];
 }

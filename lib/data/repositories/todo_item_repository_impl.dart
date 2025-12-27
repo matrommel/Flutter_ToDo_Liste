@@ -2,11 +2,11 @@
 
 import 'package:matzo/domain/entities/todo_item.dart';
 import 'package:matzo/domain/repositories/todo_item_repository.dart';
-import 'package:matzo/data/datasources/local/todo_item_local_datasource.dart';
+import 'package:matzo/data/datasources/local/i_todo_item_local_datasource.dart';
 import 'package:matzo/data/models/todo_item_model.dart';
 
 class TodoItemRepositoryImpl implements TodoItemRepository {
-  final TodoItemLocalDataSource localDataSource;
+  final ITodoItemLocalDataSource localDataSource;
 
   TodoItemRepositoryImpl(this.localDataSource);
 

@@ -10,6 +10,8 @@ class UpdateTodoItem {
     required TodoItem item,
     String? newTitle,
     int? newCount,
+    String? description,
+    List<String>? links,
   }) async {
     if (newTitle != null) {
       if (newTitle.trim().isEmpty) {
@@ -27,6 +29,8 @@ class UpdateTodoItem {
     final updatedItem = item.copyWith(
       title: newTitle?.trim(),
       count: newCount,
+      description: description,
+      links: links,
     );
 
     await repository.updateItem(updatedItem);

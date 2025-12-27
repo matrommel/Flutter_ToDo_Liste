@@ -2,11 +2,11 @@
 
 import 'package:matzo/domain/entities/category.dart';
 import 'package:matzo/domain/repositories/category_repository.dart';
-import 'package:matzo/data/datasources/local/category_local_datasource.dart';
+import 'package:matzo/data/datasources/local/i_category_local_datasource.dart';
 import 'package:matzo/data/models/category_model.dart';
 
 class CategoryRepositoryImpl implements CategoryRepository {
-  final CategoryLocalDataSource localDataSource;
+  final ICategoryLocalDataSource localDataSource;
 
   CategoryRepositoryImpl(this.localDataSource);
 

@@ -2,7 +2,6 @@
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:sqflite/sqflite.dart';
-import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 import 'package:path/path.dart';
 
 class DatabaseHelper {
@@ -19,32 +18,26 @@ class DatabaseHelper {
 
   Future<Database> _initDB(String filePath) async {
     if (kIsWeb) {
-      // Web: Verwende In-Memory-Datenbank
-      return await databaseFactoryFfiWeb.openDatabase(
-        inMemoryDatabasePath,
-        options: OpenDatabaseOptions(
-          version: 4,
-          onCreate: _createDB,
-          onUpgrade: _onUpgrade,
-          onConfigure: _onConfigure,
-        ),
-      );
-    } else {
-      // Mobile/Desktop: Verwende sqflite
-      final dbPath = await getDatabasesPath();
-      final path = join(dbPath, filePath);
-
-      return await openDatabase(
-        path,
-        version: 4,
-        onCreate: _createDB,
-        onUpgrade: _onUpgrade,
-        onConfigure: _onConfigure,
+      throw UnsupportedError(
+        'Die Web-Version wird derzeit nicht unterstützt. '
+        'Bitte verwenden Sie die Mobile- oder Desktop-Version der App.'
       );
     }
+
+    // Mobile/Desktop: Verwende sqflite
+    final dbPath = await getDatabasesPath();
+    final path = join(dbPath, filePath);
+
+    return await openDatabase(
+      path,
+      version: 5,
+      onCreate: _createDB,
+      onUpgrade: _onUpgrade,
+      onConfigure: _onConfigure,
+    );
   }
 
-  // Foreign Keys aktivieren
+  // Foreign Keys aktivieren (nur für Mobile/Desktop)
   Future _onConfigure(Database db) async {
     await db.execute('PRAGMA foreign_keys = ON');
   }
@@ -73,6 +66,8 @@ class DatabaseHelper {
         is_completed INTEGER DEFAULT 0,
         created_at INTEGER NOT NULL,
         completed_at INTEGER,
+        description TEXT,
+        links TEXT,
         FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE CASCADE
       )
     ''');
@@ -96,6 +91,11 @@ class DatabaseHelper {
     }
     if (oldVersion < 4) {
       await db.execute('ALTER TABLE categories ADD COLUMN is_protected INTEGER DEFAULT 0');
+    }
+    if (oldVersion < 5) {
+      // Neue Spalten für Beschreibung und Links
+      await db.execute('ALTER TABLE todo_items ADD COLUMN description TEXT');
+      await db.execute('ALTER TABLE todo_items ADD COLUMN links TEXT'); // JSON Array als String
     }
   }
 

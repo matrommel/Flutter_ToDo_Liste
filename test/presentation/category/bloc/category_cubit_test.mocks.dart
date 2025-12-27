@@ -228,6 +228,8 @@ class MockUpdateTodoItem extends _i1.Mock implements _i10.UpdateTodoItem {
     required _i5.TodoItem? item,
     String? newTitle,
     int? newCount,
+    String? description,
+    List<String>? links,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -237,6 +239,8 @@ class MockUpdateTodoItem extends _i1.Mock implements _i10.UpdateTodoItem {
             #item: item,
             #newTitle: newTitle,
             #newCount: newCount,
+            #description: description,
+            #links: links,
           },
         ),
         returnValue: _i4.Future<void>.value(),

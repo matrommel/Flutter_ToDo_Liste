@@ -14,11 +14,13 @@ class AddItemDialog extends StatefulWidget {
 class _AddItemDialogState extends State<AddItemDialog> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
+  final _descriptionController = TextEditingController();
   int _count = 1;
 
   @override
   void dispose() {
     _titleController.dispose();
+    _descriptionController.dispose();
     super.dispose();
   }
 
@@ -27,6 +29,9 @@ class _AddItemDialogState extends State<AddItemDialog> {
       Navigator.of(context).pop({
         'title': _titleController.text.trim(),
         'count': _count,
+        'description': _descriptionController.text.trim().isEmpty
+            ? null
+            : _descriptionController.text.trim(),
       });
     }
   }
@@ -130,6 +135,20 @@ class _AddItemDialogState extends State<AddItemDialog> {
                   ],
                 ),
               ],
+            ),
+            const SizedBox(height: 16),
+            // Beschreibung
+            TextFormField(
+              controller: _descriptionController,
+              maxLines: 3,
+              maxLength: 500,
+              textCapitalization: TextCapitalization.sentences,
+              decoration: const InputDecoration(
+                labelText: 'Beschreibung (optional)',
+                hintText: 'z.B. Links oder Details zum Item...',
+                border: OutlineInputBorder(),
+                alignLabelWithHint: true,
+              ),
             ),
           ],
         ),

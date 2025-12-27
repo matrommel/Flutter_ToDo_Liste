@@ -54,7 +54,7 @@ class CategoryCubit extends Cubit<CategoryState> {
   }
 
   // Neues Item hinzufügen
-  Future<void> addNewItem(String title, {int count = 1}) async {
+  Future<void> addNewItem(String title, {int count = 1, String? description}) async {
     if (_currentCategoryId == null) return;
 
     try {
@@ -91,6 +91,7 @@ class CategoryCubit extends Cubit<CategoryState> {
           title: title,
           count: count,
           order: nextOrder,
+          description: description,
         );
         await loadItems(_currentCategoryId!); // Neu laden
         return;
@@ -101,6 +102,7 @@ class CategoryCubit extends Cubit<CategoryState> {
         title: title,
         count: count,
         order: 0,
+        description: description,
       );
       await loadItems(_currentCategoryId!); // Neu laden
     } catch (e) {
@@ -182,7 +184,13 @@ class CategoryCubit extends Cubit<CategoryState> {
   }
 
   // Item bearbeiten
-  Future<void> editItem(int itemId, String newTitle, int newCount) async {
+  Future<void> editItem(
+    int itemId,
+    String newTitle,
+    int newCount, {
+    String? description,
+    List<String>? links,
+  }) async {
     if (_currentCategoryId == null) return;
 
     try {
@@ -198,6 +206,8 @@ class CategoryCubit extends Cubit<CategoryState> {
         item: item,
         newTitle: newTitle,
         newCount: newCount,
+        description: description,
+        links: links,
       );
 
       await loadItems(_currentCategoryId!);

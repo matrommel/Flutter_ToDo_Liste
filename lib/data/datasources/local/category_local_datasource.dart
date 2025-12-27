@@ -1,10 +1,10 @@
 // Data Layer - Lokale Datenquelle für Kategorien
 
-import 'package:sqflite/sqflite.dart';
 import 'package:matzo/data/models/category_model.dart';
 import 'package:matzo/data/datasources/local/database_helper.dart';
+import 'package:matzo/data/datasources/local/i_category_local_datasource.dart';
 
-class CategoryLocalDataSource {
+class CategoryLocalDataSource implements ICategoryLocalDataSource {
   final DatabaseHelper dbHelper;
 
   CategoryLocalDataSource(this.dbHelper);
@@ -58,7 +58,9 @@ class CategoryLocalDataSource {
       'SELECT COUNT(*) as count FROM todo_items WHERE category_id = ? AND is_completed = 0',
       [categoryId],
     );
-    return Sqflite.firstIntValue(result) ?? 0;
+    if (result.isEmpty) return 0;
+    final count = result.first['count'];
+    return (count is int) ? count : int.tryParse(count.toString()) ?? 0;
   }
 
   // Aktualisiere Biometrie-Schutz für Kategorie

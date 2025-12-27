@@ -1,5 +1,6 @@
 // Data Layer - TodoItem Model mit DB-Mapping
 
+import 'dart:convert';
 import 'package:matzo/domain/entities/todo_item.dart';
 
 class TodoItemModel extends TodoItem {
@@ -12,6 +13,8 @@ class TodoItemModel extends TodoItem {
     super.isCompleted,
     required super.createdAt,
     super.completedAt,
+    super.description,
+    super.links,
   });
 
   // Von Domain Entity erstellen
@@ -25,22 +28,36 @@ class TodoItemModel extends TodoItem {
       isCompleted: item.isCompleted,
       createdAt: item.createdAt,
       completedAt: item.completedAt,
+      description: item.description,
+      links: item.links,
     );
   }
 
   // Von Datenbank Map erstellen
   factory TodoItemModel.fromMap(Map<String, dynamic> map) {
+    // Links aus JSON String parsen
+    List<String>? links;
+    if (map['links'] != null && (map['links'] as String).isNotEmpty) {
+      try {
+        links = List<String>.from(jsonDecode(map['links'] as String));
+      } catch (e) {
+        links = null;
+      }
+    }
+
     return TodoItemModel(
       id: map['id'] as int?,
       categoryId: map['category_id'] as int,
       title: map['title'] as String,
       count: map['count'] as int? ?? 1,
-        order: map['order_num'] as int? ?? 0,
+      order: map['order_num'] as int? ?? 0,
       isCompleted: (map['is_completed'] as int) == 1,
       createdAt: DateTime.fromMillisecondsSinceEpoch(map['created_at'] as int),
       completedAt: map['completed_at'] != null
           ? DateTime.fromMillisecondsSinceEpoch(map['completed_at'] as int)
           : null,
+      description: map['description'] as String?,
+      links: links,
     );
   }
 
@@ -56,6 +73,8 @@ class TodoItemModel extends TodoItem {
       'created_at': createdAt.millisecondsSinceEpoch,
       if (completedAt != null)
         'completed_at': completedAt!.millisecondsSinceEpoch,
+      if (description != null) 'description': description,
+      if (links != null && links!.isNotEmpty) 'links': jsonEncode(links),
     };
   }
 }

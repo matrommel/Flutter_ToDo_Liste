@@ -1,10 +1,16 @@
 // Core - Dependency Injection mit GetIt
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:get_it/get_it.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
+import 'package:matzo/data/datasources/local/i_category_local_datasource.dart';
+import 'package:matzo/data/datasources/local/i_todo_item_local_datasource.dart';
 import 'package:matzo/data/datasources/local/category_local_datasource.dart';
+import 'package:matzo/data/datasources/local/category_local_datasource_web.dart';
 import 'package:matzo/data/datasources/local/database_helper.dart';
 import 'package:matzo/data/datasources/local/todo_item_local_datasource.dart';
+import 'package:matzo/data/datasources/local/todo_item_local_datasource_web.dart';
 import 'package:matzo/data/repositories/category_repository_impl.dart';
 import 'package:matzo/data/repositories/todo_item_repository_impl.dart';
 import 'package:matzo/domain/repositories/category_repository.dart';
@@ -30,6 +36,11 @@ import 'package:matzo/presentation/home/bloc/home_cubit.dart';
 final getIt = GetIt.instance;
 
 Future<void> setupDependencies() async {
+  // Initialize Hive for web
+  if (kIsWeb) {
+    await Hive.initFlutter();
+  }
+
   // ============ Presentation Layer ============
   // Cubits (Factory = neue Instanz bei jedem Aufruf)
   getIt.registerFactory(
@@ -71,7 +82,7 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton(() => UpdateTodoItem(getIt()));
   getIt.registerLazySingleton(() => DeleteTodoItem(getIt()));
   getIt.registerLazySingleton(() => EditTodoItem(getIt()));
-  
+
   getIt.registerLazySingleton(() => SearchTodoItems(
     categoryRepository: getIt(),
     todoItemRepository: getIt(),
@@ -86,10 +97,14 @@ Future<void> setupDependencies() async {
     () => TodoItemRepositoryImpl(getIt()),
   );
 
-  // Data Sources
-  getIt.registerLazySingleton(() => CategoryLocalDataSource(getIt()));
-  getIt.registerLazySingleton(() => TodoItemLocalDataSource(getIt()));
-
-  // Database
-  getIt.registerLazySingleton(() => DatabaseHelper.instance);
+  // Data Sources - Platform specific
+  if (kIsWeb) {
+    getIt.registerLazySingleton<ICategoryLocalDataSource>(() => CategoryLocalDataSourceWeb());
+    getIt.registerLazySingleton<ITodoItemLocalDataSource>(() => TodoItemLocalDataSourceWeb());
+  } else {
+    getIt.registerLazySingleton<ICategoryLocalDataSource>(() => CategoryLocalDataSource(getIt()));
+    getIt.registerLazySingleton<ITodoItemLocalDataSource>(() => TodoItemLocalDataSource(getIt()));
+    // Database (nur für Mobile/Desktop)
+    getIt.registerLazySingleton(() => DatabaseHelper.instance);
+  }
 }

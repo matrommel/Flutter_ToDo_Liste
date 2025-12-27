@@ -307,6 +307,7 @@ class _CategoryScreenContent extends StatelessWidget {
       context.read<CategoryCubit>().addNewItem(
             result['title'] as String,
             count: result['count'] as int,
+            description: result['description'] as String?,
           );
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -325,6 +326,8 @@ class _CategoryScreenContent extends StatelessWidget {
       builder: (_) => EditItemDialog(
         initialTitle: item.title,
         initialCount: item.count,
+        initialDescription: item.description,
+        initialLinks: item.links,
       ),
     );
 
@@ -333,6 +336,8 @@ class _CategoryScreenContent extends StatelessWidget {
             item.id!,
             result['title'] as String,
             result['count'] as int,
+            description: result['description'] as String?,
+            links: result['links'] as List<String>?,
           );
 
       ScaffoldMessenger.of(context).showSnackBar(
