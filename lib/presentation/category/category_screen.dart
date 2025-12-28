@@ -8,9 +8,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/di/injection.dart';
+import '../../core/services/biometric_auth_service.dart';
 import '../../domain/usecases/category/add_category.dart';
+import '../../domain/usecases/category/delete_category.dart';
 import '../../domain/usecases/category/get_recursive_item_count.dart';
 import '../../domain/usecases/category/get_recursive_total_item_count.dart';
+import '../../domain/usecases/category/update_category_protection.dart';
+import '../home/widgets/biometric_protection_dialog.dart';
 import 'bloc/category_cubit.dart';
 import 'bloc/category_state.dart';
 import 'widgets/add_item_dialog.dart';
@@ -306,6 +310,7 @@ class _CategoryScreenContent extends StatelessWidget {
                             openItemsCount: 0,
                             totalItemsCount: 0,
                             onTap: () => _navigateToSubcategory(context, subcat),
+                            onLongPress: () => _showSubcategoryOptionsDialog(context, subcat),
                           );
                         }
                         final openCount = snapshot.data![0];
@@ -315,6 +320,7 @@ class _CategoryScreenContent extends StatelessWidget {
                           openItemsCount: openCount,
                           totalItemsCount: totalCount,
                           onTap: () => _navigateToSubcategory(context, subcat),
+                          onLongPress: () => _showSubcategoryOptionsDialog(context, subcat),
                         );
                       },
                     );
@@ -847,26 +853,218 @@ class _CategoryScreenContent extends StatelessWidget {
   }
 
   void _navigateToSubcategory(BuildContext context, category) async {
+    // Cubit vor async gaps holen
+    final cubit = context.read<CategoryCubit>();
+
+    // Wenn Unterkategorie geschützt ist, Authentifizierung durchführen
+    if (category.isProtected) {
+      final authenticated = await BiometricAuthService.authenticateForCategory(category.name);
+
+      if (!authenticated) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Authentifizierung fehlgeschlagen für "${category.name}"'),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+        return;
+      }
+    }
+
     final newBreadcrumbs = [
       ...breadcrumbs,
       {'id': categoryId, 'name': categoryName},
     ];
 
-    final cubit = context.read<CategoryCubit>();
-
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => CategoryScreen(
-          categoryId: category.id!,
-          categoryName: category.name,
-          breadcrumbs: newBreadcrumbs,
+    if (context.mounted) {
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => CategoryScreen(
+            categoryId: category.id!,
+            categoryName: category.name,
+            breadcrumbs: newBreadcrumbs,
+          ),
         ),
-      ),
-    );
+      );
+    }
 
     // Reload category after returning from subcategory to refresh progress
     if (context.mounted) {
       cubit.loadItems(categoryId);
     }
+  }
+
+  void _showSubcategoryOptionsDialog(BuildContext context, category) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => Dialog(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            maxWidth: 400,
+            maxHeight: 350,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Optionen für "${category.name}"',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                const SizedBox(height: 16),
+                const Text('Wähle eine Aktion:'),
+                const SizedBox(height: 24),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    FilledButton.icon(
+                      onPressed: () async {
+                        Navigator.of(dialogContext).pop();
+
+                        // Wenn die Kategorie geschützt ist, erfordere Authentifizierung
+                        if (category.isProtected) {
+                          final authenticated =
+                              await BiometricAuthService.authenticateForCategory(category.name);
+                          if (!context.mounted) return;
+
+                          if (!authenticated) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Authentifizierung erforderlich'),
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                            return;
+                          }
+                        }
+
+                        if (context.mounted) {
+                          _showBiometricProtectionDialog(context, category);
+                        }
+                      },
+                      icon: Icon(category.isProtected ? Icons.lock_open : Icons.lock),
+                      label: Text(
+                        category.isProtected ? 'Schutz deaktivieren' : 'Schutz aktivieren',
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    FilledButton.icon(
+                      onPressed: () async {
+                        Navigator.of(dialogContext).pop();
+
+                        // Wenn die Kategorie geschützt ist, erfordere Authentifizierung zum Löschen
+                        if (category.isProtected) {
+                          final authenticated =
+                              await BiometricAuthService.authenticateForCategory(category.name);
+                          if (!context.mounted) return;
+
+                          if (!authenticated) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Authentifizierung erforderlich'),
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                            return;
+                          }
+                        }
+
+                        if (context.mounted) {
+                          _showDeleteSubcategoryDialog(context, category);
+                        }
+                      },
+                      icon: const Icon(Icons.delete_outline),
+                      label: const Text('Löschen'),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextButton(
+                      onPressed: () => Navigator.of(dialogContext).pop(),
+                      child: const Text('Abbrechen'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showBiometricProtectionDialog(BuildContext context, category) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => BiometricProtectionDialog(
+        categoryName: category.name,
+        isCurrentlyProtected: category.isProtected,
+        onProtectionChanged: (isProtected) async {
+          await getIt<UpdateCategoryProtection>()(category.id!, isProtected);
+          // Reload current category to refresh protection status
+          if (context.mounted) {
+            context.read<CategoryCubit>().loadItems(categoryId);
+          }
+        },
+      ),
+    );
+  }
+
+  void _showDeleteSubcategoryDialog(BuildContext context, category) async {
+    final totalCount = await getIt<GetRecursiveTotalItemCount>()(category.id!);
+    final hasItems = totalCount > 0;
+
+    final contentText = hasItems
+        ? 'Möchtest du "${category.name}" wirklich löschen?\n\n'
+            '⚠️ WARNUNG: Diese Unterkategorie enthält $totalCount Item(s). '
+            'Alle Items werden ebenfalls gelöscht!'
+        : 'Möchtest du "${category.name}" wirklich löschen?';
+
+    if (!context.mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Unterkategorie löschen?'),
+        content: Text(contentText),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Abbrechen'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              Navigator.of(dialogContext).pop();
+
+              // Delete subcategory
+              await getIt<DeleteCategory>()(category.id!);
+
+              if (context.mounted) {
+                // Reload current category to refresh subcategory list
+                context.read<CategoryCubit>().loadItems(categoryId);
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('✓ "${category.name}" wurde gelöscht'),
+                    duration: const Duration(seconds: 2),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              }
+            },
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+            child: const Text('Löschen'),
+          ),
+        ],
+      ),
+    );
   }
 }

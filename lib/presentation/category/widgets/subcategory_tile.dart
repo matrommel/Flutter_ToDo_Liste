@@ -8,6 +8,7 @@ class SubcategoryTile extends StatelessWidget {
   final int openItemsCount;
   final int totalItemsCount;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
 
   const SubcategoryTile({
     super.key,
@@ -15,6 +16,7 @@ class SubcategoryTile extends StatelessWidget {
     required this.openItemsCount,
     required this.totalItemsCount,
     required this.onTap,
+    this.onLongPress,
   });
 
   @override
@@ -26,6 +28,7 @@ class SubcategoryTile extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: ListTile(
         onTap: onTap,
+        onLongPress: onLongPress,
         leading: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(

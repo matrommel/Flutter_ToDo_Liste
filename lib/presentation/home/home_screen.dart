@@ -486,7 +486,7 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
         child: ConstrainedBox(
           constraints: const BoxConstraints(
             maxWidth: 400,
-            maxHeight: 300,
+            maxHeight: 350,
           ),
           child: Padding(
             padding: const EdgeInsets.all(24),
@@ -501,43 +501,11 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
                 const SizedBox(height: 16),
                 const Text('Wähle eine Aktion:'),
                 const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    TextButton(
-                      onPressed: () => Navigator.of(dialogContext).pop(),
-                      child: const Text('Abbrechen'),
-                    ),
-                    const SizedBox(width: 8),
-                    TextButton(
-                      onPressed: () async {
-                        Navigator.of(dialogContext).pop();
-
-                        // Wenn die Kategorie geschützt ist, erfordere Authentifizierung zum Löschen
-                        if (category.isProtected) {
-                          final authenticated =
-                              await BiometricAuthService.authenticateForCategory(category.name);
-                          if (!context.mounted) return;
-
-                          if (!authenticated) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Authentifizierung erforderlich'),
-                                duration: Duration(seconds: 2),
-                              ),
-                            );
-                            return;
-                          }
-                        }
-
-                        if (context.mounted) {
-                          _showDeleteDialog(context, category.id!, category.name);
-                        }
-                      },
-                      child: const Text('🗑️ Löschen'),
-                    ),
-                    const SizedBox(width: 8),
-                    TextButton(
+                    FilledButton.icon(
                       onPressed: () async {
                         Navigator.of(dialogContext).pop();
 
@@ -562,9 +530,47 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
                           _showBiometricProtectionDialog(context, category);
                         }
                       },
-                      child: Text(
-                        category.isProtected ? '🔓 Schutz deaktivieren' : '🔒 Schutz aktivieren',
+                      icon: Icon(category.isProtected ? Icons.lock_open : Icons.lock),
+                      label: Text(
+                        category.isProtected ? 'Schutz deaktivieren' : 'Schutz aktivieren',
                       ),
+                    ),
+                    const SizedBox(height: 12),
+                    FilledButton.icon(
+                      onPressed: () async {
+                        Navigator.of(dialogContext).pop();
+
+                        // Wenn die Kategorie geschützt ist, erfordere Authentifizierung zum Löschen
+                        if (category.isProtected) {
+                          final authenticated =
+                              await BiometricAuthService.authenticateForCategory(category.name);
+                          if (!context.mounted) return;
+
+                          if (!authenticated) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Authentifizierung erforderlich'),
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                            return;
+                          }
+                        }
+
+                        if (context.mounted) {
+                          _showDeleteDialog(context, category.id!, category.name);
+                        }
+                      },
+                      icon: const Icon(Icons.delete_outline),
+                      label: const Text('Löschen'),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextButton(
+                      onPressed: () => Navigator.of(dialogContext).pop(),
+                      child: const Text('Abbrechen'),
                     ),
                   ],
                 ),
