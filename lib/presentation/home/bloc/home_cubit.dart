@@ -10,6 +10,7 @@ import 'package:matzo/domain/usecases/category/get_subcategories.dart';
 import 'package:matzo/domain/usecases/category/get_recursive_item_count.dart';
 import 'package:matzo/domain/usecases/category/get_recursive_total_item_count.dart';
 import 'package:matzo/domain/usecases/category/update_category_protection.dart';
+import 'package:matzo/domain/usecases/category/reorder_categories.dart';
 import 'home_state.dart';
 
 class HomeCubit extends Cubit<HomeState> {
@@ -19,6 +20,7 @@ class HomeCubit extends Cubit<HomeState> {
   final DeleteCategory deleteCategory;
   final GetRecursiveItemCount getRecursiveItemCount;
   final GetRecursiveTotalItemCount getRecursiveTotalItemCount;
+  final ReorderCategories reorderCategoriesUseCase;
 
   HomeCubit({
     required this.getTopLevelCategories,
@@ -27,13 +29,20 @@ class HomeCubit extends Cubit<HomeState> {
     required this.deleteCategory,
     required this.getRecursiveItemCount,
     required this.getRecursiveTotalItemCount,
+    required this.reorderCategoriesUseCase,
   }) : super(HomeInitial());
 
   // Kategorien laden
   Future<void> loadCategories() async {
+    final currentState = state;
+    final sortAscending = currentState is HomeLoaded ? currentState.sortAscending : true;
+
     emit(HomeLoading());
     try {
-      final categories = await getTopLevelCategories();
+      var categories = await getTopLevelCategories();
+
+      // Kategorien sortieren
+      categories = _sortCategories(categories, sortAscending);
 
       // Item-Counts und Subcategories für jede Kategorie laden
       final Map<int, int> openCounts = {};
@@ -50,8 +59,9 @@ class HomeCubit extends Cubit<HomeState> {
           // Zähle rekursiv ALLE Items (inkl. completed) in Kategorie + Subcategories
           totalCounts[category.id!] = await getRecursiveTotalItemCount(category.id!);
 
-          // Lade Subcategories
-          final subcats = await getSubcategories(category.id!);
+          // Lade Subcategories und sortiere sie
+          var subcats = await getSubcategories(category.id!);
+          subcats = _sortCategories(subcats, sortAscending);
           subcategoriesMap[category.id!] = subcats;
 
           // Lade Progress für jede Subcategory
@@ -71,9 +81,60 @@ class HomeCubit extends Cubit<HomeState> {
         subcategories: subcategoriesMap,
         subcategoryOpenCounts: subcatOpenCounts,
         subcategoryTotalCounts: subcatTotalCounts,
+        sortAscending: sortAscending,
       ));
     } catch (e) {
       emit(HomeError(message: e.toString()));
+    }
+  }
+
+  // Kategorien sortieren (alphabetisch nach Name)
+  List<Category> _sortCategories(List<Category> categories, bool ascending) {
+    final sorted = List<Category>.from(categories);
+    sorted.sort((a, b) {
+      final comparison = a.name.toLowerCase().compareTo(b.name.toLowerCase());
+      return ascending ? comparison : -comparison;
+    });
+    return sorted;
+  }
+
+  // Sortierreihenfolge umschalten
+  void toggleSortOrder() {
+    final currentState = state;
+    if (currentState is HomeLoaded) {
+      final newSortAscending = !currentState.sortAscending;
+      final sortedCategories = _sortCategories(currentState.categories, newSortAscending);
+      emit(currentState.copyWith(
+        categories: sortedCategories,
+        sortAscending: newSortAscending,
+      ));
+    }
+  }
+
+  // Kategorien neu ordnen (Drag & Drop)
+  Future<void> reorderCategories(int oldIndex, int newIndex) async {
+    final currentState = state;
+    if (currentState is! HomeLoaded) return;
+
+    // Adjust newIndex when dragging down
+    if (newIndex > oldIndex) {
+      newIndex -= 1;
+    }
+
+    // Reorder in-memory
+    final categories = List<Category>.from(currentState.categories);
+    final movedCategory = categories.removeAt(oldIndex);
+    categories.insert(newIndex, movedCategory);
+
+    // Update UI immediately
+    emit(currentState.copyWith(categories: categories));
+
+    // Persist to database
+    try {
+      await reorderCategoriesUseCase(categories);
+    } catch (e) {
+      // On error, reload to restore correct order
+      await loadCategories();
     }
   }
 

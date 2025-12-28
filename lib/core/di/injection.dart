@@ -56,6 +56,7 @@ Future<void> setupDependencies() async {
       deleteCategory: getIt(),
       getRecursiveItemCount: getIt(),
       getRecursiveTotalItemCount: getIt(),
+      reorderCategoriesUseCase: getIt(),
     ),
   );
 

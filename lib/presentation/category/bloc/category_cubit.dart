@@ -1,6 +1,7 @@
 // Presentation - Category Screen Logic (Cubit)
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:matzo/domain/entities/category.dart';
 import 'package:matzo/domain/entities/todo_item.dart';
 import 'package:matzo/domain/usecases/category/get_subcategories.dart';
 import 'package:matzo/domain/usecases/todo_item/add_todo_item.dart';
@@ -45,7 +46,11 @@ class CategoryCubit extends Cubit<CategoryState> {
     emit(CategoryLoading());
     try {
       final items = await getTodoItems(categoryId);
-      final subcategories = await getSubcategories(categoryId);
+      var subcategories = await getSubcategories(categoryId);
+
+      // Subcategories alphabetisch sortieren
+      subcategories = _sortCategories(subcategories);
+
       emit(
         CategoryLoaded(
           items: _sortedItems(items),
@@ -306,7 +311,7 @@ class CategoryCubit extends Cubit<CategoryState> {
         emit(
           CategoryLoaded(
             items: current.items,
-            subcategories: current.subcategories,
+            subcategories: _sortCategories(current.subcategories),
             showCompleted: _showCompleted,
             showSubcategories: _showSubcategories,
             sortAscending: _sortAscending,
@@ -322,7 +327,7 @@ class CategoryCubit extends Cubit<CategoryState> {
         emit(
           CategoryLoaded(
             items: current.items,
-            subcategories: current.subcategories,
+            subcategories: _sortCategories(current.subcategories),
             showCompleted: _showCompleted,
             showSubcategories: _showSubcategories,
             sortAscending: _sortAscending,
@@ -338,7 +343,7 @@ class CategoryCubit extends Cubit<CategoryState> {
         emit(
           CategoryLoaded(
             items: _sortedItems(current.items),
-            subcategories: current.subcategories,
+            subcategories: _sortCategories(current.subcategories),
             showCompleted: _showCompleted,
             showSubcategories: _showSubcategories,
             sortAscending: _sortAscending,
@@ -349,15 +354,7 @@ class CategoryCubit extends Cubit<CategoryState> {
 
   List<TodoItem> _sortedItems(List<TodoItem> items) {
       int compareItems(TodoItem a, TodoItem b) {
-        final orderCompare = a.order.compareTo(b.order);
-        if (orderCompare != 0) {
-          // Umkehren wenn absteigend gewünscht
-          return _sortAscending ? orderCompare : -orderCompare;
-        }
-        final createdCompare = a.createdAt.compareTo(b.createdAt);
-        if (createdCompare != 0) {
-          return _sortAscending ? createdCompare : -createdCompare;
-        }
+        // Alphabetisch nach Titel sortieren (A-Z bzw. Z-A)
         final titleCompare = a.title.toLowerCase().compareTo(b.title.toLowerCase());
         return _sortAscending ? titleCompare : -titleCompare;
       }
@@ -367,6 +364,16 @@ class CategoryCubit extends Cubit<CategoryState> {
 
       return [...open, ...completed];
     }
+
+  // Kategorien alphabetisch sortieren
+  List<Category> _sortCategories(List<Category> categories) {
+    final sorted = List<Category>.from(categories);
+    sorted.sort((a, b) {
+      final comparison = a.name.toLowerCase().compareTo(b.name.toLowerCase());
+      return _sortAscending ? comparison : -comparison;
+    });
+    return sorted;
+  }
 
   // Alle erledigten Items löschen
   Future<void> deleteAllCompleted() async {

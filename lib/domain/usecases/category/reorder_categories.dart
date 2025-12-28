@@ -13,6 +13,9 @@ class ReorderCategories {
         name: categories[i].name,
         createdAt: categories[i].createdAt,
         order: i,
+        iconCodePoint: categories[i].iconCodePoint,
+        isProtected: categories[i].isProtected,
+        parentCategoryId: categories[i].parentCategoryId,
       );
       await repository.updateCategory(updatedCategory);
     }

@@ -124,6 +124,34 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
           appBar: AppBar(
             title: const Text('Meine Listen'),
             actions: [
+              // Menü mit Sortierungsoptionen (konsistent mit CategoryScreen)
+              BlocBuilder<HomeCubit, HomeState>(
+                builder: (context, state) {
+                  final sortAscending = state is HomeLoaded ? state.sortAscending : true;
+
+                  return PopupMenuButton<String>(
+                    icon: const Icon(Icons.more_vert),
+                    tooltip: 'Mehr Aktionen',
+                    onSelected: (value) {
+                      if (value == 'toggle_sort') {
+                        context.read<HomeCubit>().toggleSortOrder();
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      PopupMenuItem(
+                        value: 'toggle_sort',
+                        child: Row(
+                          children: [
+                            Icon(sortAscending ? Icons.arrow_downward : Icons.arrow_upward),
+                            const SizedBox(width: 12),
+                            Text('Sortierung ${sortAscending ? 'absteigend' : 'aufsteigend'}'),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
               IconButton(
                 icon: const Icon(Icons.add),
                 onPressed: () => _showAddCategoryDialog(context),

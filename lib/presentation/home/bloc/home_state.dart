@@ -21,6 +21,7 @@ class HomeLoaded extends HomeState {
   final Map<int, List<Category>> subcategories; // categoryId -> Subcategories
   final Map<int, int> subcategoryOpenCounts; // subcategoryId -> offene Items Count
   final Map<int, int> subcategoryTotalCounts; // subcategoryId -> gesamt Items Count
+  final bool sortAscending; // Sortierreihenfolge
 
   const HomeLoaded({
     required this.categories,
@@ -29,7 +30,28 @@ class HomeLoaded extends HomeState {
     this.subcategories = const {},
     this.subcategoryOpenCounts = const {},
     this.subcategoryTotalCounts = const {},
+    this.sortAscending = true,
   });
+
+  HomeLoaded copyWith({
+    List<Category>? categories,
+    Map<int, int>? itemCounts,
+    Map<int, int>? totalItemCounts,
+    Map<int, List<Category>>? subcategories,
+    Map<int, int>? subcategoryOpenCounts,
+    Map<int, int>? subcategoryTotalCounts,
+    bool? sortAscending,
+  }) {
+    return HomeLoaded(
+      categories: categories ?? this.categories,
+      itemCounts: itemCounts ?? this.itemCounts,
+      totalItemCounts: totalItemCounts ?? this.totalItemCounts,
+      subcategories: subcategories ?? this.subcategories,
+      subcategoryOpenCounts: subcategoryOpenCounts ?? this.subcategoryOpenCounts,
+      subcategoryTotalCounts: subcategoryTotalCounts ?? this.subcategoryTotalCounts,
+      sortAscending: sortAscending ?? this.sortAscending,
+    );
+  }
 
   @override
   List<Object?> get props => [
@@ -38,7 +60,8 @@ class HomeLoaded extends HomeState {
         totalItemCounts,
         subcategories,
         subcategoryOpenCounts,
-        subcategoryTotalCounts
+        subcategoryTotalCounts,
+        sortAscending,
       ];
 }
 
