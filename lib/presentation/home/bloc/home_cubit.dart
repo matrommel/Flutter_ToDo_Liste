@@ -10,6 +10,7 @@ import 'package:matzo/domain/usecases/category/get_subcategories.dart';
 import 'package:matzo/domain/usecases/category/get_recursive_item_count.dart';
 import 'package:matzo/domain/usecases/category/get_recursive_total_item_count.dart';
 import 'package:matzo/domain/usecases/category/update_category_protection.dart';
+import 'package:matzo/domain/usecases/category/update_category.dart';
 import 'package:matzo/domain/usecases/category/reorder_categories.dart';
 import 'home_state.dart';
 
@@ -17,6 +18,7 @@ class HomeCubit extends Cubit<HomeState> {
   final GetTopLevelCategories getTopLevelCategories;
   final GetSubcategories getSubcategories;
   final AddCategory addCategory;
+  final UpdateCategory updateCategory;
   final DeleteCategory deleteCategory;
   final GetRecursiveItemCount getRecursiveItemCount;
   final GetRecursiveTotalItemCount getRecursiveTotalItemCount;
@@ -26,6 +28,7 @@ class HomeCubit extends Cubit<HomeState> {
     required this.getTopLevelCategories,
     required this.getSubcategories,
     required this.addCategory,
+    required this.updateCategory,
     required this.deleteCategory,
     required this.getRecursiveItemCount,
     required this.getRecursiveTotalItemCount,
@@ -146,6 +149,21 @@ class HomeCubit extends Cubit<HomeState> {
     } catch (e) {
       emit(HomeError(message: e.toString()));
       // Nach Fehler wieder in geladenen Zustand gehen
+      await loadCategories();
+    }
+  }
+
+  // Kategorie bearbeiten
+  Future<void> editCategory(int categoryId, String newName, {int? newIconCodePoint}) async {
+    try {
+      await updateCategory(
+        categoryId: categoryId,
+        newName: newName,
+        newIconCodePoint: newIconCodePoint,
+      );
+      await loadCategories(); // Neu laden
+    } catch (e) {
+      emit(HomeError(message: e.toString()));
       await loadCategories();
     }
   }

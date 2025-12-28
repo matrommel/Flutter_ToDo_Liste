@@ -25,6 +25,7 @@ import 'package:matzo/domain/usecases/category/get_subcategories.dart';
 import 'package:matzo/domain/usecases/category/get_subcategory_count.dart';
 import 'package:matzo/domain/usecases/category/get_top_level_categories.dart';
 import 'package:matzo/domain/usecases/category/reorder_categories.dart';
+import 'package:matzo/domain/usecases/category/update_category.dart';
 import 'package:matzo/domain/usecases/category/update_category_protection.dart';
 import 'package:matzo/domain/usecases/todo_item/add_todo_item.dart';
 import 'package:matzo/domain/usecases/todo_item/delete_todo_item.dart';
@@ -53,6 +54,7 @@ Future<void> setupDependencies() async {
       getTopLevelCategories: getIt(),
       getSubcategories: getIt(),
       addCategory: getIt(),
+      updateCategory: getIt(),
       deleteCategory: getIt(),
       getRecursiveItemCount: getIt(),
       getRecursiveTotalItemCount: getIt(),
@@ -79,6 +81,7 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton(() => GetTopLevelCategories(getIt()));
   getIt.registerLazySingleton(() => GetSubcategories(getIt()));
   getIt.registerLazySingleton(() => AddCategory(getIt()));
+  getIt.registerLazySingleton(() => UpdateCategory(getIt()));
   getIt.registerLazySingleton(() => DeleteCategory(getIt()));
   getIt.registerLazySingleton(() => GetCategoryItemCount(getIt()));
   getIt.registerLazySingleton(() => GetRecursiveItemCount(getIt()));
