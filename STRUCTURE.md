@@ -46,21 +46,29 @@ matzo/
 │   │           └── delete_todo_item.dart
 │   │
 │   └── presentation/                      # Presentation Layer (UI)
+│       ├── widgets/                       # Shared Widgets
+│       │   ├── category_options_dialog.dart  # Unified Options Dialog (Categories & Subcategories)
+│       │   └── edit_category_dialog.dart     # Unified Edit Dialog (Categories & Subcategories)
 │       ├── home/                          # Home Screen (Kategorien)
 │       │   ├── bloc/
 │       │   │   ├── home_cubit.dart       # State Management
 │       │   │   └── home_state.dart       # UI States
 │       │   ├── widgets/
-│       │   │   └── category_card.dart    # Kategorie-Karte Widget
+│       │   │   ├── category_card.dart    # Kategorie-Karte Widget
+│       │   │   └── biometric_protection_dialog.dart  # Biometric Protection Dialog
 │       │   └── home_screen.dart          # Home Screen
-│       └── category/                      # Category Screen (Items)
-│           ├── bloc/
-│           │   ├── category_cubit.dart   # State Management
-│           │   └── category_state.dart   # UI States
-│           ├── widgets/
-│           │   ├── todo_item_tile.dart   # Item Widget
-│           │   └── add_item_dialog.dart  # Dialog zum Hinzufügen
-│           └── category_screen.dart      # Category Screen
+│       ├── category/                      # Category Screen (Items)
+│       │   ├── bloc/
+│       │   │   ├── category_cubit.dart   # State Management
+│       │   │   └── category_state.dart   # UI States
+│       │   ├── widgets/
+│       │   │   ├── todo_item_tile.dart   # Item Widget
+│       │   │   ├── add_item_dialog.dart  # Dialog zum Hinzufügen
+│       │   │   ├── edit_item_dialog.dart # Dialog zum Bearbeiten
+│       │   │   └── subcategory_tile.dart # Subcategory Widget
+│       │   └── category_screen.dart      # Category Screen
+│       └── settings/                      # Settings Screen
+│           └── settings_screen.dart      # Settings Screen
 │
 ├── pubspec.yaml                           # Dependencies & Projekt-Config
 ├── analysis_options.yaml                  # Lint-Regeln
@@ -73,12 +81,24 @@ matzo/
 
 GESAMTSTATISTIK:
 ================
-📊 35 Dart-Dateien
+📊 35+ Dart-Dateien
 📁 3 Layer (Domain, Data, Presentation)
 🔧 Clean Architecture Pattern
-💾 SQLite Datenbank
+💾 SQLite Datenbank (Mobile/Desktop) + Web Storage (Browser)
 🎨 Material Design 3
 🌓 Dark Mode Support
+🔒 Biometrische Authentifizierung
+📂 Hierarchische Kategorien (Categories & Subcategories)
+♻️  Unified Widget Pattern (weniger Code-Duplikation)
+```
+
+## Aktuelle Code-Qualität Verbesserungen
+
+### Unified Dialog Widgets
+- **CategoryOptionsDialog**: Behandelt Options-Menü für Kategorien UND Unterkategorien
+- **EditCategoryDialog**: Behandelt Bearbeitung für Kategorien UND Unterkategorien
+- Eliminiert ~735 Zeilen duplizierter Code
+- Konsistentes UX für alle Kategorie-Typen
 ```
 
 ## Layer-Übersicht

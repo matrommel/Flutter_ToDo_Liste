@@ -1,5 +1,29 @@
 # Flutter Todo App - Update Summary 🎉
 
+## Aktuelles Update: Code-Refactoring (Dezember 2025)
+
+### ✅ Unified Dialog Widgets
+- **Kategorie- und Unterkategorie-Dialoge vereinheitlicht**
+- Erstellt: `CategoryOptionsDialog` - Einheitliche Optionen für Kategorien und Unterkategorien
+- Erstellt: `EditCategoryDialog` - Einheitliche Bearbeitung für Kategorien und Unterkategorien
+- **~735 Zeilen Duplikat-Code eliminiert** (~365 aus `home_screen.dart`, ~370 aus `category_screen.dart`)
+- Kategorien und Unterkategorien verwenden jetzt dieselben Dialog-Widgets
+- Parameter `isSubcategory` in `CategoryOptionsDialog.show()` steuert nur noch Anzeigetexte
+
+### Betroffene Dateien:
+1. `lib/presentation/widgets/category_options_dialog.dart` - NEU
+2. `lib/presentation/widgets/edit_category_dialog.dart` - NEU (vorher nur in home verwendet)
+3. `lib/presentation/home/home_screen.dart` - Dialog-Methoden entfernt, verwendet jetzt unified widgets
+4. `lib/presentation/category/category_screen.dart` - Subcategory-Dialog-Methoden entfernt, verwendet jetzt unified widgets
+
+### Technische Verbesserungen:
+- Weniger Code-Duplikation = einfachere Wartung
+- Konsistentes Verhalten zwischen Kategorien und Unterkategorien
+- Einzelne Quelle der Wahrheit für Dialog-Logik
+- Vereinfachte Imports in Screen-Dateien
+
+---
+
 ## Neue Features implementiert:
 
 ### ✅ 1. Dark Mode

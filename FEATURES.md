@@ -1,5 +1,29 @@
 # 🎯 Neue Features - Priorität 1 Implementierung
 
+## ✅ Code-Qualität: Unified Dialog Widgets (Dezember 2025)
+**Status**: ✅ Vollständig refactored
+
+**Was wurde gemacht**:
+- Kategorien und Unterkategorien verwenden nun dieselben Dialog-Widgets
+- Erstellt: `lib/presentation/widgets/category_options_dialog.dart`
+- Erstellt: `lib/presentation/widgets/edit_category_dialog.dart`
+- **~735 Zeilen Duplikat-Code eliminiert**
+- Konsistentes Verhalten und UX für alle Kategorie-Typen
+
+**Vorteile**:
+- Einfachere Wartung (Single Source of Truth)
+- Weniger Fehleranfälligkeit
+- Konsistente User Experience
+- Kleinere Code-Basis
+
+**Technische Details**:
+- `CategoryOptionsDialog.show()` akzeptiert `isSubcategory` Parameter nur für Anzeigetexte
+- Beide Dialog-Widgets funktionieren identisch für Kategorien und Unterkategorien
+- Biometrische Authentifizierung wird korrekt für geschützte Kategorien/Unterkategorien gehandhabt
+- Verwendung von Callbacks (`onUpdate`) für UI-Aktualisierung
+
+---
+
 ## ✅ Implementierte Features
 
 ### 1. 🌙 Dark Mode
