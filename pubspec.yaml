@@ -1,7 +1,7 @@
 name: matzo
 description: To do Listen für Kategorien erstellen
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.0.1+1
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -39,6 +39,13 @@ dependencies:
   
   # Utilities
   intl: ^0.18.1
+
+  # File Handling & Export/Import
+  file_picker: ^8.0.0
+  path_provider: ^2.1.0
+  share_plus: ^7.2.0
+  universal_html: ^2.2.4
+  package_info_plus: ^8.0.0
 
 dev_dependencies:
   flutter_test:
