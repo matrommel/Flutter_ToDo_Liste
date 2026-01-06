@@ -5,6 +5,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:confetti/confetti.dart';
 import '../../core/di/injection.dart';
 import '../../core/services/biometric_auth_service.dart';
+import '../../domain/entities/category.dart';
+import '../../domain/usecases/category/delete_category.dart';
+import '../../domain/usecases/category/get_recursive_total_item_count.dart';
 import '../category/category_screen.dart';
 import '../settings/settings_screen.dart';
 import '../widgets/category_options_dialog.dart';
@@ -241,18 +244,58 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
                 final totalCount = state.totalItemCounts[category.id] ?? 0;
                 final subcats = state.subcategories[category.id] ?? [];
 
-                return CategoryCard(
-                  category: category,
-                  openItemsCount: openCount,
-                  totalItemsCount: totalCount,
-                  subcategories: subcats,
-                  subcategoryOpenCounts: state.subcategoryOpenCounts,
-                  subcategoryTotalCounts: state.subcategoryTotalCounts,
-                  onTap: () => _navigateToCategory(context, category),
-                  onLongPress: () => CategoryOptionsDialog.show(
-                    context,
-                    category,
-                    onUpdate: () => context.read<HomeCubit>().loadCategories(),
+                return Dismissible(
+                  key: ValueKey('category_${category.id}'),
+                  direction: DismissDirection.horizontal,
+                  confirmDismiss: (direction) async {
+                    if (direction == DismissDirection.startToEnd) {
+                      // Swipe nach rechts: Kategorie öffnen
+                      _navigateToCategory(context, category);
+                      return false; // Nicht dismissen
+                    } else {
+                      // Swipe nach links: Löschen
+                      return await _handleDeleteSwipe(context, category);
+                    }
+                  },
+                  background: Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    alignment: Alignment.centerLeft,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Icon(
+                      Icons.open_in_new,
+                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      size: 32,
+                    ),
+                  ),
+                  secondaryBackground: Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.errorContainer,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    alignment: Alignment.centerRight,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Icon(
+                      Icons.delete_outline,
+                      color: Theme.of(context).colorScheme.onErrorContainer,
+                      size: 32,
+                    ),
+                  ),
+                  child: CategoryCard(
+                    category: category,
+                    openItemsCount: openCount,
+                    totalItemsCount: totalCount,
+                    subcategories: subcats,
+                    subcategoryOpenCounts: state.subcategoryOpenCounts,
+                    subcategoryTotalCounts: state.subcategoryTotalCounts,
+                    onTap: () => _navigateToCategory(context, category),
+                    onLongPress: () => CategoryOptionsDialog.show(
+                      context,
+                      category,
+                      onUpdate: () => context.read<HomeCubit>().loadCategories(),
+                    ),
                   ),
                 );
               },
@@ -286,6 +329,90 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
         ),
       ],
     );
+  }
+
+  Future<bool> _handleDeleteSwipe(BuildContext context, Category category) async {
+    // Biometrische Authentifizierung wenn geschützt
+    if (category.isProtected) {
+      final authenticated = await BiometricAuthService.authenticateForCategory(category.name);
+      if (!context.mounted) return false;
+
+      if (!authenticated) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Authentifizierung erforderlich'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+        return false;
+      }
+    }
+
+    // Item-Count prüfen
+    final totalCount = await getIt<GetRecursiveTotalItemCount>()(category.id!);
+    if (!context.mounted) return false;
+
+    final hasItems = totalCount > 0;
+    final contentText = hasItems
+        ? 'Möchtest du "${category.name}" wirklich löschen?\n\n'
+            '⚠️ WARNUNG: Diese Kategorie enthält $totalCount Item(s). '
+            'Alle Items werden ebenfalls gelöscht!'
+        : 'Möchtest du "${category.name}" wirklich löschen?';
+
+    // Bestätigungs-Dialog anzeigen
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Kategorie löschen?'),
+        content: Text(contentText),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Abbrechen'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(dialogContext).colorScheme.error,
+            ),
+            child: const Text('Löschen'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return false;
+    if (!context.mounted) return false;
+
+    // Kategorie löschen
+    try {
+      await getIt<DeleteCategory>()(category.id!);
+
+      if (context.mounted) {
+        context.read<HomeCubit>().loadCategories();
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('✓ "${category.name}" wurde gelöscht'),
+            duration: const Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+
+      return true;
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Fehler beim Löschen: $e'),
+            duration: const Duration(seconds: 3),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+      return false;
+    }
   }
 
   void _navigateToCategory(BuildContext context, category) async {
