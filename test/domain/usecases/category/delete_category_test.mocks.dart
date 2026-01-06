@@ -43,6 +43,25 @@ class MockCategoryRepository extends _i1.Mock
       ) as _i3.Future<List<_i4.Category>>);
 
   @override
+  _i3.Future<List<_i4.Category>> getTopLevelCategories() => (super.noSuchMethod(
+        Invocation.method(
+          #getTopLevelCategories,
+          [],
+        ),
+        returnValue: _i3.Future<List<_i4.Category>>.value(<_i4.Category>[]),
+      ) as _i3.Future<List<_i4.Category>>);
+
+  @override
+  _i3.Future<List<_i4.Category>> getSubcategories(int? parentId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getSubcategories,
+          [parentId],
+        ),
+        returnValue: _i3.Future<List<_i4.Category>>.value(<_i4.Category>[]),
+      ) as _i3.Future<List<_i4.Category>>);
+
+  @override
   _i3.Future<_i4.Category?> getCategoryById(int? id) => (super.noSuchMethod(
         Invocation.method(
           #getCategoryById,
@@ -89,4 +108,49 @@ class MockCategoryRepository extends _i1.Mock
         ),
         returnValue: _i3.Future<int>.value(0),
       ) as _i3.Future<int>);
+
+  @override
+  _i3.Future<int> getRecursiveItemCount(int? categoryId) => (super.noSuchMethod(
+        Invocation.method(
+          #getRecursiveItemCount,
+          [categoryId],
+        ),
+        returnValue: _i3.Future<int>.value(0),
+      ) as _i3.Future<int>);
+
+  @override
+  _i3.Future<int> getRecursiveTotalItemCount(int? categoryId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getRecursiveTotalItemCount,
+          [categoryId],
+        ),
+        returnValue: _i3.Future<int>.value(0),
+      ) as _i3.Future<int>);
+
+  @override
+  _i3.Future<int> getSubcategoryCount(int? categoryId) => (super.noSuchMethod(
+        Invocation.method(
+          #getSubcategoryCount,
+          [categoryId],
+        ),
+        returnValue: _i3.Future<int>.value(0),
+      ) as _i3.Future<int>);
+
+  @override
+  _i3.Future<void> updateCategoryProtection(
+    int? categoryId,
+    bool? isProtected,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #updateCategoryProtection,
+          [
+            categoryId,
+            isProtected,
+          ],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
 }

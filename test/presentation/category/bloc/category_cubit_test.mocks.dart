@@ -3,17 +3,20 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i4;
+import 'dart:async' as _i5;
 
-import 'package:matzo/domain/entities/todo_item.dart' as _i5;
+import 'package:matzo/domain/entities/category.dart' as _i8;
+import 'package:matzo/domain/entities/todo_item.dart' as _i6;
+import 'package:matzo/domain/repositories/category_repository.dart' as _i3;
 import 'package:matzo/domain/repositories/todo_item_repository.dart' as _i2;
-import 'package:matzo/domain/usecases/todo_item/add_todo_item.dart' as _i6;
-import 'package:matzo/domain/usecases/todo_item/delete_todo_item.dart' as _i11;
-import 'package:matzo/domain/usecases/todo_item/get_todo_items.dart' as _i3;
-import 'package:matzo/domain/usecases/todo_item/toggle_todo_item.dart' as _i7;
-import 'package:matzo/domain/usecases/todo_item/update_item_count.dart' as _i8;
-import 'package:matzo/domain/usecases/todo_item/update_item_order.dart' as _i9;
-import 'package:matzo/domain/usecases/todo_item/update_todo_item.dart' as _i10;
+import 'package:matzo/domain/usecases/category/get_subcategories.dart' as _i7;
+import 'package:matzo/domain/usecases/todo_item/add_todo_item.dart' as _i9;
+import 'package:matzo/domain/usecases/todo_item/delete_todo_item.dart' as _i14;
+import 'package:matzo/domain/usecases/todo_item/get_todo_items.dart' as _i4;
+import 'package:matzo/domain/usecases/todo_item/toggle_todo_item.dart' as _i10;
+import 'package:matzo/domain/usecases/todo_item/update_item_count.dart' as _i11;
+import 'package:matzo/domain/usecases/todo_item/update_item_order.dart' as _i12;
+import 'package:matzo/domain/usecases/todo_item/update_todo_item.dart' as _i13;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -42,10 +45,21 @@ class _FakeTodoItemRepository_0 extends _i1.SmartFake
         );
 }
 
+class _FakeCategoryRepository_1 extends _i1.SmartFake
+    implements _i3.CategoryRepository {
+  _FakeCategoryRepository_1(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
 /// A class which mocks [GetTodoItems].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockGetTodoItems extends _i1.Mock implements _i3.GetTodoItems {
+class MockGetTodoItems extends _i1.Mock implements _i4.GetTodoItems {
   MockGetTodoItems() {
     _i1.throwOnMissingStub(this);
   }
@@ -60,19 +74,47 @@ class MockGetTodoItems extends _i1.Mock implements _i3.GetTodoItems {
       ) as _i2.TodoItemRepository);
 
   @override
-  _i4.Future<List<_i5.TodoItem>> call(int? categoryId) => (super.noSuchMethod(
+  _i5.Future<List<_i6.TodoItem>> call(int? categoryId) => (super.noSuchMethod(
         Invocation.method(
           #call,
           [categoryId],
         ),
-        returnValue: _i4.Future<List<_i5.TodoItem>>.value(<_i5.TodoItem>[]),
-      ) as _i4.Future<List<_i5.TodoItem>>);
+        returnValue: _i5.Future<List<_i6.TodoItem>>.value(<_i6.TodoItem>[]),
+      ) as _i5.Future<List<_i6.TodoItem>>);
+}
+
+/// A class which mocks [GetSubcategories].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockGetSubcategories extends _i1.Mock implements _i7.GetSubcategories {
+  MockGetSubcategories() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i3.CategoryRepository get repository => (super.noSuchMethod(
+        Invocation.getter(#repository),
+        returnValue: _FakeCategoryRepository_1(
+          this,
+          Invocation.getter(#repository),
+        ),
+      ) as _i3.CategoryRepository);
+
+  @override
+  _i5.Future<List<_i8.Category>> call(int? parentCategoryId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #call,
+          [parentCategoryId],
+        ),
+        returnValue: _i5.Future<List<_i8.Category>>.value(<_i8.Category>[]),
+      ) as _i5.Future<List<_i8.Category>>);
 }
 
 /// A class which mocks [AddTodoItem].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockAddTodoItem extends _i1.Mock implements _i6.AddTodoItem {
+class MockAddTodoItem extends _i1.Mock implements _i9.AddTodoItem {
   MockAddTodoItem() {
     _i1.throwOnMissingStub(this);
   }
@@ -87,11 +129,12 @@ class MockAddTodoItem extends _i1.Mock implements _i6.AddTodoItem {
       ) as _i2.TodoItemRepository);
 
   @override
-  _i4.Future<int> call({
+  _i5.Future<int> call({
     required int? categoryId,
     required String? title,
     int? count = 1,
     int? order = 0,
+    String? description,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -102,16 +145,17 @@ class MockAddTodoItem extends _i1.Mock implements _i6.AddTodoItem {
             #title: title,
             #count: count,
             #order: order,
+            #description: description,
           },
         ),
-        returnValue: _i4.Future<int>.value(0),
-      ) as _i4.Future<int>);
+        returnValue: _i5.Future<int>.value(0),
+      ) as _i5.Future<int>);
 }
 
 /// A class which mocks [ToggleTodoItem].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockToggleTodoItem extends _i1.Mock implements _i7.ToggleTodoItem {
+class MockToggleTodoItem extends _i1.Mock implements _i10.ToggleTodoItem {
   MockToggleTodoItem() {
     _i1.throwOnMissingStub(this);
   }
@@ -126,20 +170,20 @@ class MockToggleTodoItem extends _i1.Mock implements _i7.ToggleTodoItem {
       ) as _i2.TodoItemRepository);
 
   @override
-  _i4.Future<void> call(int? itemId) => (super.noSuchMethod(
+  _i5.Future<void> call(int? itemId) => (super.noSuchMethod(
         Invocation.method(
           #call,
           [itemId],
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 }
 
 /// A class which mocks [UpdateItemCount].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockUpdateItemCount extends _i1.Mock implements _i8.UpdateItemCount {
+class MockUpdateItemCount extends _i1.Mock implements _i11.UpdateItemCount {
   MockUpdateItemCount() {
     _i1.throwOnMissingStub(this);
   }
@@ -154,7 +198,7 @@ class MockUpdateItemCount extends _i1.Mock implements _i8.UpdateItemCount {
       ) as _i2.TodoItemRepository);
 
   @override
-  _i4.Future<void> call(
+  _i5.Future<void> call(
     int? itemId,
     int? newCount,
   ) =>
@@ -166,15 +210,15 @@ class MockUpdateItemCount extends _i1.Mock implements _i8.UpdateItemCount {
             newCount,
           ],
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 }
 
 /// A class which mocks [UpdateItemOrder].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockUpdateItemOrder extends _i1.Mock implements _i9.UpdateItemOrder {
+class MockUpdateItemOrder extends _i1.Mock implements _i12.UpdateItemOrder {
   MockUpdateItemOrder() {
     _i1.throwOnMissingStub(this);
   }
@@ -189,7 +233,7 @@ class MockUpdateItemOrder extends _i1.Mock implements _i9.UpdateItemOrder {
       ) as _i2.TodoItemRepository);
 
   @override
-  _i4.Future<void> call(
+  _i5.Future<void> call(
     int? itemId,
     int? newOrder,
   ) =>
@@ -201,15 +245,15 @@ class MockUpdateItemOrder extends _i1.Mock implements _i9.UpdateItemOrder {
             newOrder,
           ],
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 }
 
 /// A class which mocks [UpdateTodoItem].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockUpdateTodoItem extends _i1.Mock implements _i10.UpdateTodoItem {
+class MockUpdateTodoItem extends _i1.Mock implements _i13.UpdateTodoItem {
   MockUpdateTodoItem() {
     _i1.throwOnMissingStub(this);
   }
@@ -224,8 +268,8 @@ class MockUpdateTodoItem extends _i1.Mock implements _i10.UpdateTodoItem {
       ) as _i2.TodoItemRepository);
 
   @override
-  _i4.Future<void> call({
-    required _i5.TodoItem? item,
+  _i5.Future<void> call({
+    required _i6.TodoItem? item,
     String? newTitle,
     int? newCount,
     String? description,
@@ -243,15 +287,15 @@ class MockUpdateTodoItem extends _i1.Mock implements _i10.UpdateTodoItem {
             #links: links,
           },
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 }
 
 /// A class which mocks [DeleteTodoItem].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockDeleteTodoItem extends _i1.Mock implements _i11.DeleteTodoItem {
+class MockDeleteTodoItem extends _i1.Mock implements _i14.DeleteTodoItem {
   MockDeleteTodoItem() {
     _i1.throwOnMissingStub(this);
   }
@@ -266,12 +310,12 @@ class MockDeleteTodoItem extends _i1.Mock implements _i11.DeleteTodoItem {
       ) as _i2.TodoItemRepository);
 
   @override
-  _i4.Future<void> call(int? itemId) => (super.noSuchMethod(
+  _i5.Future<void> call(int? itemId) => (super.noSuchMethod(
         Invocation.method(
           #call,
           [itemId],
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 }

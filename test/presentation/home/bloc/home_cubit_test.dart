@@ -3,40 +3,59 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:matzo/domain/entities/category.dart';
-// import 'package:matzo/domain/entities/todo_item.dart';
 import 'package:matzo/domain/usecases/category/add_category.dart';
 import 'package:matzo/domain/usecases/category/delete_category.dart';
-import 'package:matzo/domain/usecases/category/get_categories.dart';
-import 'package:matzo/domain/usecases/category/get_category_item_count.dart';
+import 'package:matzo/domain/usecases/category/get_top_level_categories.dart';
+import 'package:matzo/domain/usecases/category/get_subcategories.dart';
+import 'package:matzo/domain/usecases/category/get_recursive_item_count.dart';
+import 'package:matzo/domain/usecases/category/get_recursive_total_item_count.dart';
+import 'package:matzo/domain/usecases/category/update_category.dart';
+import 'package:matzo/domain/usecases/category/reorder_categories.dart';
 import 'package:matzo/presentation/home/bloc/home_cubit.dart';
 import 'package:matzo/presentation/home/bloc/home_state.dart';
 
 import 'home_cubit_test.mocks.dart';
 
-import 'package:matzo/domain/usecases/todo_item/get_todo_items.dart';
-
-@GenerateMocks([GetCategories, AddCategory, DeleteCategory, GetCategoryItemCount, GetTodoItems])
+@GenerateMocks([
+  GetTopLevelCategories,
+  GetSubcategories,
+  AddCategory,
+  UpdateCategory,
+  DeleteCategory,
+  GetRecursiveItemCount,
+  GetRecursiveTotalItemCount,
+  ReorderCategories,
+])
 void main() {
   late HomeCubit cubit;
-  late MockGetCategories mockGetCategories;
+  late MockGetTopLevelCategories mockGetTopLevelCategories;
+  late MockGetSubcategories mockGetSubcategories;
   late MockAddCategory mockAddCategory;
+  late MockUpdateCategory mockUpdateCategory;
   late MockDeleteCategory mockDeleteCategory;
-  late MockGetCategoryItemCount mockGetCategoryItemCount;
-  late MockGetTodoItems mockGetTodoItems;
+  late MockGetRecursiveItemCount mockGetRecursiveItemCount;
+  late MockGetRecursiveTotalItemCount mockGetRecursiveTotalItemCount;
+  late MockReorderCategories mockReorderCategories;
 
   setUp(() {
-    mockGetCategories = MockGetCategories();
+    mockGetTopLevelCategories = MockGetTopLevelCategories();
+    mockGetSubcategories = MockGetSubcategories();
     mockAddCategory = MockAddCategory();
+    mockUpdateCategory = MockUpdateCategory();
     mockDeleteCategory = MockDeleteCategory();
-    mockGetCategoryItemCount = MockGetCategoryItemCount();
-    mockGetTodoItems = MockGetTodoItems();
-    
+    mockGetRecursiveItemCount = MockGetRecursiveItemCount();
+    mockGetRecursiveTotalItemCount = MockGetRecursiveTotalItemCount();
+    mockReorderCategories = MockReorderCategories();
+
     cubit = HomeCubit(
-      getCategories: mockGetCategories,
+      getTopLevelCategories: mockGetTopLevelCategories,
+      getSubcategories: mockGetSubcategories,
       addCategory: mockAddCategory,
+      updateCategory: mockUpdateCategory,
       deleteCategory: mockDeleteCategory,
-      getCategoryItemCount: mockGetCategoryItemCount,
-      getTodoItems: mockGetTodoItems,
+      getRecursiveItemCount: mockGetRecursiveItemCount,
+      getRecursiveTotalItemCount: mockGetRecursiveTotalItemCount,
+      reorderCategoriesUseCase: mockReorderCategories,
     );
   });
 
@@ -56,12 +75,12 @@ void main() {
           Category(id: 1, name: 'Einkaufen', createdAt: DateTime.now()),
           Category(id: 2, name: 'Arbeit', createdAt: DateTime.now()),
         ];
-        
-        when(mockGetCategories()).thenAnswer((_) async => categories);
-        when(mockGetCategoryItemCount(any)).thenAnswer((_) async => 5);
-         when(mockGetTodoItems(1)).thenAnswer((_) async => []);
-         when(mockGetTodoItems(2)).thenAnswer((_) async => []);
-        
+
+        when(mockGetTopLevelCategories()).thenAnswer((_) async => categories);
+        when(mockGetSubcategories(any)).thenAnswer((_) async => []);
+        when(mockGetRecursiveItemCount(any)).thenAnswer((_) async => 5);
+        when(mockGetRecursiveTotalItemCount(any)).thenAnswer((_) async => 10);
+
         return cubit;
       },
       act: (cubit) => cubit.loadCategories(),
@@ -73,18 +92,20 @@ void main() {
             .having((state) => state.totalItemCounts.length, 'total counts length', 2),
       ],
       verify: (_) {
-        verify(mockGetCategories()).called(1);
-        verify(mockGetCategoryItemCount(1)).called(1);
-        verify(mockGetCategoryItemCount(2)).called(1);
-        verify(mockGetTodoItems(1)).called(1);
-        verify(mockGetTodoItems(2)).called(1);
+        verify(mockGetTopLevelCategories()).called(1);
+        verify(mockGetSubcategories(1)).called(1);
+        verify(mockGetSubcategories(2)).called(1);
+        verify(mockGetRecursiveItemCount(1)).called(1);
+        verify(mockGetRecursiveItemCount(2)).called(1);
+        verify(mockGetRecursiveTotalItemCount(1)).called(1);
+        verify(mockGetRecursiveTotalItemCount(2)).called(1);
       },
     );
 
     blocTest<HomeCubit, HomeState>(
       'sollte HomeError emittieren bei Fehler',
       build: () {
-        when(mockGetCategories()).thenThrow(Exception('Database error'));
+        when(mockGetTopLevelCategories()).thenThrow(Exception('Database error'));
         return cubit;
       },
       act: (cubit) => cubit.loadCategories(),
@@ -102,12 +123,14 @@ void main() {
     blocTest<HomeCubit, HomeState>(
       'sollte neue Kategorie hinzufügen und neu laden',
       build: () {
-        when(mockAddCategory('Neue Kategorie', iconCodePoint: null)).thenAnswer((_) async => 1);
-        when(mockGetCategories()).thenAnswer((_) async => [
+        when(mockAddCategory('Neue Kategorie', iconCodePoint: null, parentCategoryId: null))
+            .thenAnswer((_) async => 1);
+        when(mockGetTopLevelCategories()).thenAnswer((_) async => [
           Category(id: 1, name: 'Neue Kategorie', createdAt: DateTime.now()),
         ]);
-        when(mockGetCategoryItemCount(any)).thenAnswer((_) async => 0);
-        when(mockGetTodoItems(any)).thenAnswer((_) async => []);
+        when(mockGetSubcategories(any)).thenAnswer((_) async => []);
+        when(mockGetRecursiveItemCount(any)).thenAnswer((_) async => 0);
+        when(mockGetRecursiveTotalItemCount(any)).thenAnswer((_) async => 0);
         return cubit;
       },
       act: (cubit) => cubit.addNewCategory('Neue Kategorie'),
@@ -117,8 +140,8 @@ void main() {
             .having((state) => state.categories.length, 'categories count', 1),
       ],
       verify: (_) {
-        verify(mockAddCategory('Neue Kategorie', iconCodePoint: null)).called(1);
-        verify(mockGetCategories()).called(1);
+        verify(mockAddCategory('Neue Kategorie', iconCodePoint: null, parentCategoryId: null)).called(1);
+        verify(mockGetTopLevelCategories()).called(1);
       },
     );
 
@@ -126,7 +149,7 @@ void main() {
       'sollte Kategorie löschen und neu laden',
       build: () {
         when(mockDeleteCategory(any)).thenAnswer((_) async {});
-        when(mockGetCategories()).thenAnswer((_) async => []);
+        when(mockGetTopLevelCategories()).thenAnswer((_) async => []);
         return cubit;
       },
       act: (cubit) => cubit.removeCategory(1),
@@ -137,16 +160,16 @@ void main() {
       ],
       verify: (_) {
         verify(mockDeleteCategory(1)).called(1);
-        verify(mockGetCategories()).called(1);
+        verify(mockGetTopLevelCategories()).called(1);
       },
     );
 
     blocTest<HomeCubit, HomeState>(
       'sollte Fehler anzeigen aber neu laden nach Add-Fehler',
       build: () {
-        when(mockAddCategory(any, iconCodePoint: null)).thenThrow(Exception('Validation error'));
-        when(mockGetCategories()).thenAnswer((_) async => []);
-        when(mockGetCategoryItemCount(any)).thenAnswer((_) async => 0);
+        when(mockAddCategory(any, iconCodePoint: null, parentCategoryId: null))
+            .thenThrow(Exception('Validation error'));
+        when(mockGetTopLevelCategories()).thenAnswer((_) async => []);
         return cubit;
       },
       act: (cubit) => cubit.addNewCategory(''),
@@ -160,7 +183,7 @@ void main() {
     blocTest<HomeCubit, HomeState>(
       'sollte leere Liste korrekt handhaben',
       build: () {
-        when(mockGetCategories()).thenAnswer((_) async => []);
+        when(mockGetTopLevelCategories()).thenAnswer((_) async => []);
         return cubit;
       },
       act: (cubit) => cubit.loadCategories(),

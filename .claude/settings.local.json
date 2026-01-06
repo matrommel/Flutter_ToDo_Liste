@@ -27,7 +27,10 @@
       "Bash(del /Q c:UsersadminDocumentsreposFlutter_ToDo_Listelibpresentationcategorywidgetsitem_links_view.dart)",
       "Bash(cat:*)",
       "Bash(timeout /t 5 /nobreak)",
-      "Bash(ping:*)"
+      "Bash(ping:*)",
+      "Bash(dart run build_runner:*)",
+      "Bash(flutter test)",
+      "Bash(flutter test:*)"
     ],
     "deny": [],
     "ask": []

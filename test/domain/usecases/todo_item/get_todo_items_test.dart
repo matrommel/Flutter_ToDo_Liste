@@ -27,6 +27,7 @@ void main() {
           id: 1,
           categoryId: testCategoryId,
           title: 'Item 1',
+          order: 0,
           isCompleted: false,
           createdAt: DateTime.now(),
         ),
@@ -43,13 +44,14 @@ void main() {
       verify(mockRepository.getItemsByCategory(testCategoryId)).called(1);
     });
 
-    test('sollte offene Items alphabetisch sortieren', () async {
+    test('sollte offene Items nach manueller Reihenfolge (order) sortieren', () async {
       // Arrange
       final items = [
         TodoItem(
           id: 3,
           categoryId: testCategoryId,
           title: 'Zucchini',
+          order: 2,
           isCompleted: false,
           createdAt: DateTime.now(),
         ),
@@ -57,6 +59,7 @@ void main() {
           id: 1,
           categoryId: testCategoryId,
           title: 'Apfel',
+          order: 0,
           isCompleted: false,
           createdAt: DateTime.now(),
         ),
@@ -64,6 +67,7 @@ void main() {
           id: 2,
           categoryId: testCategoryId,
           title: 'Milch',
+          order: 1,
           isCompleted: false,
           createdAt: DateTime.now(),
         ),
@@ -77,18 +81,19 @@ void main() {
 
       // Assert
       expect(result.length, 3);
-      expect(result[0].title, 'Apfel');
-      expect(result[1].title, 'Milch');
-      expect(result[2].title, 'Zucchini');
+      expect(result[0].title, 'Apfel');  // order: 0
+      expect(result[1].title, 'Milch');   // order: 1
+      expect(result[2].title, 'Zucchini'); // order: 2
     });
 
-    test('sollte erledigte Items alphabetisch sortieren', () async {
+    test('sollte erledigte Items nach manueller Reihenfolge (order) sortieren', () async {
       // Arrange
       final items = [
         TodoItem(
           id: 3,
           categoryId: testCategoryId,
           title: 'Zwiebeln',
+          order: 1,
           isCompleted: true,
           createdAt: DateTime.now(),
         ),
@@ -96,6 +101,7 @@ void main() {
           id: 1,
           categoryId: testCategoryId,
           title: 'Butter',
+          order: 0,
           isCompleted: true,
           createdAt: DateTime.now(),
         ),
@@ -109,8 +115,8 @@ void main() {
 
       // Assert
       expect(result.length, 2);
-      expect(result[0].title, 'Butter');
-      expect(result[1].title, 'Zwiebeln');
+      expect(result[0].title, 'Butter');    // order: 0
+      expect(result[1].title, 'Zwiebeln');  // order: 1
     });
 
     test('sollte offene Items vor erledigten Items platzieren', () async {
@@ -120,6 +126,7 @@ void main() {
           id: 1,
           categoryId: testCategoryId,
           title: 'Erledigtes Item',
+          order: 1,
           isCompleted: true,
           createdAt: DateTime.now(),
         ),
@@ -127,6 +134,7 @@ void main() {
           id: 2,
           categoryId: testCategoryId,
           title: 'Offenes Item',
+          order: 0,
           isCompleted: false,
           createdAt: DateTime.now(),
         ),
@@ -146,13 +154,14 @@ void main() {
       expect(result[1].isCompleted, true);
     });
 
-    test('sollte Groß-/Kleinschreibung bei Sortierung ignorieren', () async {
+    test('sollte nach manueller Reihenfolge sortieren (unabhängig von Groß-/Kleinschreibung)', () async {
       // Arrange
       final items = [
         TodoItem(
           id: 1,
           categoryId: testCategoryId,
           title: 'ZEBRA',
+          order: 2,
           isCompleted: false,
           createdAt: DateTime.now(),
         ),
@@ -160,6 +169,7 @@ void main() {
           id: 2,
           categoryId: testCategoryId,
           title: 'apfel',
+          order: 0,
           isCompleted: false,
           createdAt: DateTime.now(),
         ),
@@ -167,6 +177,7 @@ void main() {
           id: 3,
           categoryId: testCategoryId,
           title: 'Milch',
+          order: 1,
           isCompleted: false,
           createdAt: DateTime.now(),
         ),
@@ -179,9 +190,9 @@ void main() {
       final result = await useCase(testCategoryId);
 
       // Assert
-      expect(result[0].title, 'apfel');
-      expect(result[1].title, 'Milch');
-      expect(result[2].title, 'ZEBRA');
+      expect(result[0].title, 'apfel');  // order: 0
+      expect(result[1].title, 'Milch');  // order: 1
+      expect(result[2].title, 'ZEBRA');  // order: 2
     });
 
     test('sollte leere Liste zurückgeben wenn keine Items', () async {
@@ -196,13 +207,14 @@ void main() {
       expect(result, isEmpty);
     });
 
-    test('sollte gemischte offene und erledigte Items korrekt sortieren', () async {
+    test('sollte gemischte offene und erledigte Items nach manueller Reihenfolge sortieren', () async {
       // Arrange
       final items = [
         TodoItem(
           id: 1,
           categoryId: testCategoryId,
           title: 'Z Erledigt',
+          order: 3,
           isCompleted: true,
           createdAt: DateTime.now(),
         ),
@@ -210,6 +222,7 @@ void main() {
           id: 2,
           categoryId: testCategoryId,
           title: 'B Offen',
+          order: 0,
           isCompleted: false,
           createdAt: DateTime.now(),
         ),
@@ -217,6 +230,7 @@ void main() {
           id: 3,
           categoryId: testCategoryId,
           title: 'A Erledigt',
+          order: 2,
           isCompleted: true,
           createdAt: DateTime.now(),
         ),
@@ -224,6 +238,7 @@ void main() {
           id: 4,
           categoryId: testCategoryId,
           title: 'C Offen',
+          order: 1,
           isCompleted: false,
           createdAt: DateTime.now(),
         ),
@@ -237,15 +252,15 @@ void main() {
 
       // Assert
       expect(result.length, 4);
-      // Offene Items zuerst, alphabetisch
-      expect(result[0].title, 'B Offen');
+      // Offene Items zuerst, nach order-Feld
+      expect(result[0].title, 'B Offen');      // order: 0
       expect(result[0].isCompleted, false);
-      expect(result[1].title, 'C Offen');
+      expect(result[1].title, 'C Offen');      // order: 1
       expect(result[1].isCompleted, false);
-      // Dann erledigte Items, alphabetisch
-      expect(result[2].title, 'A Erledigt');
+      // Dann erledigte Items, nach order-Feld
+      expect(result[2].title, 'A Erledigt');   // order: 2
       expect(result[2].isCompleted, true);
-      expect(result[3].title, 'Z Erledigt');
+      expect(result[3].title, 'Z Erledigt');   // order: 3
       expect(result[3].isCompleted, true);
     });
   });

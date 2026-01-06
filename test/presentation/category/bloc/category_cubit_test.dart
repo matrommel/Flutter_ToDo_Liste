@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:matzo/domain/entities/todo_item.dart';
+import 'package:matzo/domain/usecases/category/get_subcategories.dart';
 import 'package:matzo/domain/usecases/todo_item/add_todo_item.dart';
 import 'package:matzo/domain/usecases/todo_item/delete_todo_item.dart';
 import 'package:matzo/domain/usecases/todo_item/get_todo_items.dart';
@@ -17,6 +18,7 @@ import 'category_cubit_test.mocks.dart';
 
 @GenerateMocks([
   GetTodoItems,
+  GetSubcategories,
   AddTodoItem,
   ToggleTodoItem,
   UpdateItemCount,
@@ -27,6 +29,7 @@ import 'category_cubit_test.mocks.dart';
 void main() {
   late CategoryCubit cubit;
   late MockGetTodoItems mockGetTodoItems;
+  late MockGetSubcategories mockGetSubcategories;
   late MockAddTodoItem mockAddTodoItem;
   late MockToggleTodoItem mockToggleTodoItem;
   late MockUpdateItemCount mockUpdateItemCount;
@@ -36,6 +39,7 @@ void main() {
 
   setUp(() {
     mockGetTodoItems = MockGetTodoItems();
+    mockGetSubcategories = MockGetSubcategories();
     mockAddTodoItem = MockAddTodoItem();
     mockToggleTodoItem = MockToggleTodoItem();
     mockUpdateItemCount = MockUpdateItemCount();
@@ -43,6 +47,7 @@ void main() {
 
     cubit = CategoryCubit(
       getTodoItems: mockGetTodoItems,
+      getSubcategories: mockGetSubcategories,
       addTodoItem: mockAddTodoItem,
       toggleTodoItem: mockToggleTodoItem,
       updateItemCount: mockUpdateItemCount,
@@ -93,6 +98,8 @@ void main() {
       build: () {
         when(mockGetTodoItems(testCategoryId))
             .thenAnswer((_) async => testItems);
+        when(mockGetSubcategories(testCategoryId))
+            .thenAnswer((_) async => []);
         return cubit;
       },
       act: (cubit) => cubit.loadItems(testCategoryId),
@@ -112,6 +119,8 @@ void main() {
       'loadItems sollte leere Liste bei keinen Items zurückgeben',
       build: () {
         when(mockGetTodoItems(testCategoryId))
+            .thenAnswer((_) async => []);
+        when(mockGetSubcategories(testCategoryId))
             .thenAnswer((_) async => []);
         return cubit;
       },
@@ -143,10 +152,17 @@ void main() {
     blocTest<CategoryCubit, CategoryState>(
       'addNewItem sollte neues Item hinzufügen und Liste neu laden',
       build: () {
-        when(mockAddTodoItem(categoryId: testCategoryId, title: 'Käse', count: 1, order: anyNamed('order')))
-            .thenAnswer((_) async => 4);
+        when(mockAddTodoItem(
+          categoryId: testCategoryId,
+          title: 'Käse',
+          count: 1,
+          order: anyNamed('order'),
+          description: anyNamed('description'),
+        )).thenAnswer((_) async => 4);
         when(mockGetTodoItems(testCategoryId))
             .thenAnswer((_) async => testItems);
+        when(mockGetSubcategories(testCategoryId))
+            .thenAnswer((_) async => []);
         return cubit;
       },
       act: (cubit) => cubit.loadItems(testCategoryId).then((_) => cubit.addNewItem('Käse')),
@@ -157,7 +173,13 @@ void main() {
         isA<CategoryLoaded>(),
       ],
       verify: (_) {
-        verify(mockAddTodoItem(categoryId: testCategoryId, title: 'Käse', count: 1, order: anyNamed('order'))).called(1);
+        verify(mockAddTodoItem(
+          categoryId: testCategoryId,
+          title: 'Käse',
+          count: 1,
+          order: anyNamed('order'),
+          description: anyNamed('description'),
+        )).called(1);
         verify(mockGetTodoItems(testCategoryId)).called(2);
       },
     );
@@ -165,10 +187,17 @@ void main() {
     blocTest<CategoryCubit, CategoryState>(
       'addNewItem sollte Fehler behandeln und Liste neu laden',
       build: () {
-        when(mockAddTodoItem(categoryId: testCategoryId, title: '', count: 1, order: anyNamed('order')))
-            .thenThrow(Exception('Invalid title'));
+        when(mockAddTodoItem(
+          categoryId: testCategoryId,
+          title: '',
+          count: 1,
+          order: anyNamed('order'),
+          description: anyNamed('description'),
+        )).thenThrow(Exception('Invalid title'));
         when(mockGetTodoItems(testCategoryId))
             .thenAnswer((_) async => testItems);
+        when(mockGetSubcategories(testCategoryId))
+            .thenAnswer((_) async => []);
         return cubit;
       },
       act: (cubit) => cubit.loadItems(testCategoryId).then((_) => cubit.addNewItem('')),
@@ -188,6 +217,8 @@ void main() {
             .thenAnswer((_) async => Future.value());
         when(mockGetTodoItems(testCategoryId))
             .thenAnswer((_) async => testItems);
+        when(mockGetSubcategories(testCategoryId))
+            .thenAnswer((_) async => []);
         return cubit;
       },
       act: (cubit) => cubit.loadItems(testCategoryId).then((_) => cubit.toggleItem(testItems[0].id!)),
@@ -210,6 +241,8 @@ void main() {
             .thenAnswer((_) async => Future.value());
         when(mockGetTodoItems(testCategoryId))
             .thenAnswer((_) async => testItems);
+        when(mockGetSubcategories(testCategoryId))
+            .thenAnswer((_) async => []);
         return cubit;
       },
       act: (cubit) => cubit.loadItems(testCategoryId).then((_) => cubit.incrementCount(testItems[0].id!, testItems[0].count)),
@@ -231,6 +264,8 @@ void main() {
             .thenAnswer((_) async => Future.value());
         when(mockGetTodoItems(testCategoryId))
             .thenAnswer((_) async => testItems);
+        when(mockGetSubcategories(testCategoryId))
+            .thenAnswer((_) async => []);
         return cubit;
       },
       act: (cubit) => cubit.loadItems(testCategoryId).then((_) => cubit.decrementCount(testItems[0].id!, testItems[0].count)),
@@ -250,6 +285,8 @@ void main() {
       build: () {
         when(mockGetTodoItems(testCategoryId))
             .thenAnswer((_) async => testItems);
+        when(mockGetSubcategories(testCategoryId))
+            .thenAnswer((_) async => []);
         return cubit;
       },
       act: (cubit) => cubit.loadItems(testCategoryId).then((_) => cubit.decrementCount(testItems[1].id!, testItems[1].count)), // Milch hat count=1
@@ -269,6 +306,8 @@ void main() {
             .thenAnswer((_) async => Future.value());
         when(mockGetTodoItems(testCategoryId))
             .thenAnswer((_) async => testItems);
+        when(mockGetSubcategories(testCategoryId))
+            .thenAnswer((_) async => []);
         return cubit;
       },
       act: (cubit) => cubit.loadItems(testCategoryId).then((_) => cubit.removeItem(1)),

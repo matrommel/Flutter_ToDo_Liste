@@ -3,18 +3,21 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i5;
+import 'dart:async' as _i4;
 
-import 'package:matzo/domain/entities/category.dart' as _i6;
-import 'package:matzo/domain/entities/todo_item.dart' as _i11;
+import 'package:matzo/domain/entities/category.dart' as _i5;
 import 'package:matzo/domain/repositories/category_repository.dart' as _i2;
-import 'package:matzo/domain/repositories/todo_item_repository.dart' as _i3;
 import 'package:matzo/domain/usecases/category/add_category.dart' as _i7;
-import 'package:matzo/domain/usecases/category/delete_category.dart' as _i8;
-import 'package:matzo/domain/usecases/category/get_categories.dart' as _i4;
-import 'package:matzo/domain/usecases/category/get_category_item_count.dart'
-    as _i9;
-import 'package:matzo/domain/usecases/todo_item/get_todo_items.dart' as _i10;
+import 'package:matzo/domain/usecases/category/delete_category.dart' as _i9;
+import 'package:matzo/domain/usecases/category/get_recursive_item_count.dart'
+    as _i10;
+import 'package:matzo/domain/usecases/category/get_recursive_total_item_count.dart'
+    as _i11;
+import 'package:matzo/domain/usecases/category/get_subcategories.dart' as _i6;
+import 'package:matzo/domain/usecases/category/get_top_level_categories.dart'
+    as _i3;
+import 'package:matzo/domain/usecases/category/reorder_categories.dart' as _i12;
+import 'package:matzo/domain/usecases/category/update_category.dart' as _i8;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -43,22 +46,12 @@ class _FakeCategoryRepository_0 extends _i1.SmartFake
         );
 }
 
-class _FakeTodoItemRepository_1 extends _i1.SmartFake
-    implements _i3.TodoItemRepository {
-  _FakeTodoItemRepository_1(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-/// A class which mocks [GetCategories].
+/// A class which mocks [GetTopLevelCategories].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockGetCategories extends _i1.Mock implements _i4.GetCategories {
-  MockGetCategories() {
+class MockGetTopLevelCategories extends _i1.Mock
+    implements _i3.GetTopLevelCategories {
+  MockGetTopLevelCategories() {
     _i1.throwOnMissingStub(this);
   }
 
@@ -72,13 +65,41 @@ class MockGetCategories extends _i1.Mock implements _i4.GetCategories {
       ) as _i2.CategoryRepository);
 
   @override
-  _i5.Future<List<_i6.Category>> call() => (super.noSuchMethod(
+  _i4.Future<List<_i5.Category>> call() => (super.noSuchMethod(
         Invocation.method(
           #call,
           [],
         ),
-        returnValue: _i5.Future<List<_i6.Category>>.value(<_i6.Category>[]),
-      ) as _i5.Future<List<_i6.Category>>);
+        returnValue: _i4.Future<List<_i5.Category>>.value(<_i5.Category>[]),
+      ) as _i4.Future<List<_i5.Category>>);
+}
+
+/// A class which mocks [GetSubcategories].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockGetSubcategories extends _i1.Mock implements _i6.GetSubcategories {
+  MockGetSubcategories() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i2.CategoryRepository get repository => (super.noSuchMethod(
+        Invocation.getter(#repository),
+        returnValue: _FakeCategoryRepository_0(
+          this,
+          Invocation.getter(#repository),
+        ),
+      ) as _i2.CategoryRepository);
+
+  @override
+  _i4.Future<List<_i5.Category>> call(int? parentCategoryId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #call,
+          [parentCategoryId],
+        ),
+        returnValue: _i4.Future<List<_i5.Category>>.value(<_i5.Category>[]),
+      ) as _i4.Future<List<_i5.Category>>);
 }
 
 /// A class which mocks [AddCategory].
@@ -99,24 +120,66 @@ class MockAddCategory extends _i1.Mock implements _i7.AddCategory {
       ) as _i2.CategoryRepository);
 
   @override
-  _i5.Future<int> call(
+  _i4.Future<int> call(
     String? name, {
     int? iconCodePoint,
+    int? parentCategoryId,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
           #call,
           [name],
-          {#iconCodePoint: iconCodePoint},
+          {
+            #iconCodePoint: iconCodePoint,
+            #parentCategoryId: parentCategoryId,
+          },
         ),
-        returnValue: _i5.Future<int>.value(0),
-      ) as _i5.Future<int>);
+        returnValue: _i4.Future<int>.value(0),
+      ) as _i4.Future<int>);
+}
+
+/// A class which mocks [UpdateCategory].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockUpdateCategory extends _i1.Mock implements _i8.UpdateCategory {
+  MockUpdateCategory() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i2.CategoryRepository get repository => (super.noSuchMethod(
+        Invocation.getter(#repository),
+        returnValue: _FakeCategoryRepository_0(
+          this,
+          Invocation.getter(#repository),
+        ),
+      ) as _i2.CategoryRepository);
+
+  @override
+  _i4.Future<void> call({
+    required int? categoryId,
+    required String? newName,
+    int? newIconCodePoint,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #call,
+          [],
+          {
+            #categoryId: categoryId,
+            #newName: newName,
+            #newIconCodePoint: newIconCodePoint,
+          },
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 }
 
 /// A class which mocks [DeleteCategory].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockDeleteCategory extends _i1.Mock implements _i8.DeleteCategory {
+class MockDeleteCategory extends _i1.Mock implements _i9.DeleteCategory {
   MockDeleteCategory() {
     _i1.throwOnMissingStub(this);
   }
@@ -131,22 +194,22 @@ class MockDeleteCategory extends _i1.Mock implements _i8.DeleteCategory {
       ) as _i2.CategoryRepository);
 
   @override
-  _i5.Future<void> call(int? categoryId) => (super.noSuchMethod(
+  _i4.Future<void> call(int? categoryId) => (super.noSuchMethod(
         Invocation.method(
           #call,
           [categoryId],
         ),
-        returnValue: _i5.Future<void>.value(),
-        returnValueForMissingStub: _i5.Future<void>.value(),
-      ) as _i5.Future<void>);
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 }
 
-/// A class which mocks [GetCategoryItemCount].
+/// A class which mocks [GetRecursiveItemCount].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockGetCategoryItemCount extends _i1.Mock
-    implements _i9.GetCategoryItemCount {
-  MockGetCategoryItemCount() {
+class MockGetRecursiveItemCount extends _i1.Mock
+    implements _i10.GetRecursiveItemCount {
+  MockGetRecursiveItemCount() {
     _i1.throwOnMissingStub(this);
   }
 
@@ -160,38 +223,67 @@ class MockGetCategoryItemCount extends _i1.Mock
       ) as _i2.CategoryRepository);
 
   @override
-  _i5.Future<int> call(int? categoryId) => (super.noSuchMethod(
+  _i4.Future<int> call(int? categoryId) => (super.noSuchMethod(
         Invocation.method(
           #call,
           [categoryId],
         ),
-        returnValue: _i5.Future<int>.value(0),
-      ) as _i5.Future<int>);
+        returnValue: _i4.Future<int>.value(0),
+      ) as _i4.Future<int>);
 }
 
-/// A class which mocks [GetTodoItems].
+/// A class which mocks [GetRecursiveTotalItemCount].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockGetTodoItems extends _i1.Mock implements _i10.GetTodoItems {
-  MockGetTodoItems() {
+class MockGetRecursiveTotalItemCount extends _i1.Mock
+    implements _i11.GetRecursiveTotalItemCount {
+  MockGetRecursiveTotalItemCount() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i3.TodoItemRepository get repository => (super.noSuchMethod(
+  _i2.CategoryRepository get repository => (super.noSuchMethod(
         Invocation.getter(#repository),
-        returnValue: _FakeTodoItemRepository_1(
+        returnValue: _FakeCategoryRepository_0(
           this,
           Invocation.getter(#repository),
         ),
-      ) as _i3.TodoItemRepository);
+      ) as _i2.CategoryRepository);
 
   @override
-  _i5.Future<List<_i11.TodoItem>> call(int? categoryId) => (super.noSuchMethod(
+  _i4.Future<int> call(int? categoryId) => (super.noSuchMethod(
         Invocation.method(
           #call,
           [categoryId],
         ),
-        returnValue: _i5.Future<List<_i11.TodoItem>>.value(<_i11.TodoItem>[]),
-      ) as _i5.Future<List<_i11.TodoItem>>);
+        returnValue: _i4.Future<int>.value(0),
+      ) as _i4.Future<int>);
+}
+
+/// A class which mocks [ReorderCategories].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockReorderCategories extends _i1.Mock implements _i12.ReorderCategories {
+  MockReorderCategories() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i2.CategoryRepository get repository => (super.noSuchMethod(
+        Invocation.getter(#repository),
+        returnValue: _FakeCategoryRepository_0(
+          this,
+          Invocation.getter(#repository),
+        ),
+      ) as _i2.CategoryRepository);
+
+  @override
+  _i4.Future<void> call(List<_i5.Category>? categories) => (super.noSuchMethod(
+        Invocation.method(
+          #call,
+          [categories],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 }
