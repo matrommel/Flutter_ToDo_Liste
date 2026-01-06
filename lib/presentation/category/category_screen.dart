@@ -128,10 +128,10 @@ class _CategoryScreenContent extends StatelessWidget {
             PopupMenuButton<String>(
               icon: const Icon(Icons.more_vert),
               tooltip: 'Mehr Aktionen',
-              onSelected: (value) {
+              onSelected: (value) async {
                 switch (value) {
                   case 'toggle_sort':
-                    context.read<CategoryCubit>().toggleSortOrder();
+                    await context.read<CategoryCubit>().toggleSortOrder();
                     break;
                   case 'toggle_completed':
                     context.read<CategoryCubit>().toggleShowCompleted();

@@ -102,11 +102,15 @@ class HomeCubit extends Cubit<HomeState> {
   }
 
   // Sortierreihenfolge umschalten
-  void toggleSortOrder() {
+  Future<void> toggleSortOrder() async {
     final currentState = state;
     if (currentState is HomeLoaded) {
       final newSortAscending = !currentState.sortAscending;
       final sortedCategories = _sortCategories(currentState.categories, newSortAscending);
+
+      // Neue Order-Werte zuweisen basierend auf der alphabetischen Sortierung
+      await reorderCategoriesUseCase(sortedCategories);
+
       emit(currentState.copyWith(
         categories: sortedCategories,
         sortAscending: newSortAscending,

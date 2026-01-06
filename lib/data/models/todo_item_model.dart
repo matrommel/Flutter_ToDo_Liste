@@ -10,6 +10,7 @@ class TodoItemModel extends TodoItem {
     required super.title,
     super.count,
     super.order,
+    super.originalOrder,
     super.isCompleted,
     required super.createdAt,
     super.completedAt,
@@ -25,6 +26,7 @@ class TodoItemModel extends TodoItem {
       title: item.title,
       count: item.count,
       order: item.order,
+      originalOrder: item.originalOrder,
       isCompleted: item.isCompleted,
       createdAt: item.createdAt,
       completedAt: item.completedAt,
@@ -51,6 +53,7 @@ class TodoItemModel extends TodoItem {
       title: map['title'] as String,
       count: map['count'] as int? ?? 1,
       order: map['order_num'] as int? ?? 0,
+      originalOrder: map['original_order'] as int?,
       isCompleted: (map['is_completed'] as int) == 1,
       createdAt: DateTime.fromMillisecondsSinceEpoch(map['created_at'] as int),
       completedAt: map['completed_at'] != null
@@ -69,6 +72,7 @@ class TodoItemModel extends TodoItem {
       'title': title,
       'count': count,
       'order_num': order,
+      if (originalOrder != null) 'original_order': originalOrder,
       'is_completed': isCompleted ? 1 : 0,
       'created_at': createdAt.millisecondsSinceEpoch,
       if (completedAt != null)

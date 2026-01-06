@@ -48,6 +48,7 @@ class TodoItemLocalDataSourceWeb implements ITodoItemLocalDataSource {
       title: item.title,
       count: item.count,
       order: item.order,
+      originalOrder: item.originalOrder,
       isCompleted: item.isCompleted,
       createdAt: item.createdAt,
       completedAt: item.completedAt,
@@ -73,12 +74,31 @@ class TodoItemLocalDataSourceWeb implements ITodoItemLocalDataSource {
     if (item == null) return;
 
     final newStatus = !item.isCompleted;
+    int newOrder = item.order;
+    int? newOriginalOrder = item.originalOrder;
+
+    if (newStatus) {
+      // Abhaken: Ursprüngliche Position speichern und ans Ende verschieben
+      final allItems = await getItemsByCategory(item.categoryId);
+      final maxOrder = allItems.isEmpty ? 0 : allItems.map((e) => e.order).reduce((a, b) => a > b ? a : b);
+
+      newOriginalOrder = item.order; // Ursprüngliche Position speichern
+      newOrder = maxOrder + 1; // Ans Ende verschieben
+    } else {
+      // Wiederaktivieren: Ursprüngliche Position wiederherstellen
+      if (item.originalOrder != null) {
+        newOrder = item.originalOrder!;
+        newOriginalOrder = null; // originalOrder zurücksetzen
+      }
+    }
+
     final updated = TodoItemModel(
       id: item.id,
       categoryId: item.categoryId,
       title: item.title,
       count: item.count,
-      order: item.order,
+      order: newOrder,
+      originalOrder: newOriginalOrder,
       isCompleted: newStatus,
       createdAt: item.createdAt,
       completedAt: newStatus ? DateTime.now() : null,
@@ -98,6 +118,7 @@ class TodoItemLocalDataSourceWeb implements ITodoItemLocalDataSource {
       title: item.title,
       count: newCount,
       order: item.order,
+      originalOrder: item.originalOrder,
       isCompleted: item.isCompleted,
       createdAt: item.createdAt,
       completedAt: item.completedAt,
@@ -117,6 +138,7 @@ class TodoItemLocalDataSourceWeb implements ITodoItemLocalDataSource {
       title: item.title,
       count: item.count,
       order: newOrder,
+      originalOrder: item.originalOrder,
       isCompleted: item.isCompleted,
       createdAt: item.createdAt,
       completedAt: item.completedAt,

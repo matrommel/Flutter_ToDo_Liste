@@ -58,7 +58,7 @@ class TodoItemLocalDataSource implements ITodoItemLocalDataSource {
 
   Future<void> toggleItemCompletion(int id) async {
     final db = await dbHelper.database;
-    
+
     // Aktuellen Status holen
     final item = await getItemById(id);
     if (item == null) return;
@@ -67,12 +67,30 @@ class TodoItemLocalDataSource implements ITodoItemLocalDataSource {
     final newStatus = !item.isCompleted;
     final completedAt = newStatus ? DateTime.now().millisecondsSinceEpoch : null;
 
+    final updateData = <String, dynamic>{
+      'is_completed': newStatus ? 1 : 0,
+      'completed_at': completedAt,
+    };
+
+    if (newStatus) {
+      // Abhaken: Ursprüngliche Position speichern und ans Ende verschieben
+      // Maximale Order in dieser Kategorie finden
+      final allItems = await getItemsByCategory(item.categoryId);
+      final maxOrder = allItems.isEmpty ? 0 : allItems.map((e) => e.order).reduce((a, b) => a > b ? a : b);
+
+      updateData['original_order'] = item.order; // Ursprüngliche Position speichern
+      updateData['order_num'] = maxOrder + 1; // Ans Ende verschieben
+    } else {
+      // Wiederaktivieren: Ursprüngliche Position wiederherstellen
+      if (item.originalOrder != null) {
+        updateData['order_num'] = item.originalOrder;
+        updateData['original_order'] = null; // originalOrder zurücksetzen
+      }
+    }
+
     await db.update(
       'todo_items',
-      {
-        'is_completed': newStatus ? 1 : 0,
-        'completed_at': completedAt,
-      },
+      updateData,
       where: 'id = ?',
       whereArgs: [id],
     );

@@ -336,13 +336,25 @@ class CategoryCubit extends Cubit<CategoryState> {
       }
     }
 
-  void toggleSortOrder() {
+  Future<void> toggleSortOrder() async {
       if (state is CategoryLoaded) {
         _sortAscending = !_sortAscending;
         final current = state as CategoryLoaded;
+
+        // Alphabetisch sortierte Items (mit neuem A-Z oder Z-A)
+        final sortedItems = _sortedItems(current.items);
+
+        // Neue Order-Werte zuweisen basierend auf der alphabetischen Sortierung
+        for (var i = 0; i < sortedItems.length; i++) {
+          if (sortedItems[i].id != null && sortedItems[i].order != i) {
+            await updateItemOrder(sortedItems[i].id!, i);
+            sortedItems[i] = sortedItems[i].copyWith(order: i);
+          }
+        }
+
         emit(
           CategoryLoaded(
-            items: _sortedItems(current.items),
+            items: sortedItems,
             subcategories: _sortCategories(current.subcategories),
             showCompleted: _showCompleted,
             showSubcategories: _showSubcategories,

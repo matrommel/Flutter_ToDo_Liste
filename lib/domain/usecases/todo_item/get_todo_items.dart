@@ -10,17 +10,17 @@ class GetTodoItems {
 
   Future<List<TodoItem>> call(int categoryId) async {
     final items = await repository.getItemsByCategory(categoryId);
-    
-    // Sortieren: Zuerst offene Items (alphabetisch), dann erledigte Items
+
+    // Sortieren nach manueller Reihenfolge (order Feld)
     items.sort((a, b) {
       // Erst nach Status (nicht erledigt zuerst)
       if (a.isCompleted != b.isCompleted) {
         return a.isCompleted ? 1 : -1;
       }
-      // Dann alphabetisch nach Titel
-      return a.title.toLowerCase().compareTo(b.title.toLowerCase());
+      // Dann nach manueller Sortierung (order)
+      return a.order.compareTo(b.order);
     });
-    
+
     return items;
   }
 }

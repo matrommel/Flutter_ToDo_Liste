@@ -30,7 +30,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 6,
+      version: 7,
       onCreate: _createDB,
       onUpgrade: _onUpgrade,
       onConfigure: _onConfigure,
@@ -65,6 +65,7 @@ class DatabaseHelper {
         title TEXT NOT NULL,
         count INTEGER DEFAULT 1,
         order_num INTEGER DEFAULT 0,
+        original_order INTEGER,
         is_completed INTEGER DEFAULT 0,
         created_at INTEGER NOT NULL,
         completed_at INTEGER,
@@ -104,6 +105,10 @@ class DatabaseHelper {
       await db.execute('ALTER TABLE categories ADD COLUMN parent_category_id INTEGER');
       // Index für bessere Performance bei Hierarchie-Abfragen
       await db.execute('CREATE INDEX idx_categories_parent_id ON categories(parent_category_id)');
+    }
+    if (oldVersion < 7) {
+      // Neue Spalte für ursprüngliche Position vor dem Abhaken
+      await db.execute('ALTER TABLE todo_items ADD COLUMN original_order INTEGER');
     }
   }
 

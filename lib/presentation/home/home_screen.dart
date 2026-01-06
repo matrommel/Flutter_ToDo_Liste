@@ -131,9 +131,9 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
                   return PopupMenuButton<String>(
                     icon: const Icon(Icons.more_vert),
                     tooltip: 'Mehr Aktionen',
-                    onSelected: (value) {
+                    onSelected: (value) async {
                       if (value == 'toggle_sort') {
-                        context.read<HomeCubit>().toggleSortOrder();
+                        await context.read<HomeCubit>().toggleSortOrder();
                       }
                     },
                     itemBuilder: (context) => [

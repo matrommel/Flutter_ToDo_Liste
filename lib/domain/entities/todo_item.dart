@@ -8,6 +8,7 @@ class TodoItem extends Equatable {
   final String title;
   final int count;
   final int order;
+  final int? originalOrder; // Ursprüngliche Position vor dem Abhaken
   final bool isCompleted;
   final DateTime createdAt;
   final DateTime? completedAt;
@@ -20,6 +21,7 @@ class TodoItem extends Equatable {
     required this.title,
     this.count = 1,
     this.order = 0,
+    this.originalOrder,
     this.isCompleted = false,
     required this.createdAt,
     this.completedAt,
@@ -34,6 +36,7 @@ class TodoItem extends Equatable {
     String? title,
     int? count,
     int? order,
+    int? originalOrder,
     bool? isCompleted,
     DateTime? createdAt,
     DateTime? completedAt,
@@ -46,6 +49,7 @@ class TodoItem extends Equatable {
       title: title ?? this.title,
       count: count ?? this.count,
       order: order ?? this.order,
+      originalOrder: originalOrder ?? this.originalOrder,
       isCompleted: isCompleted ?? this.isCompleted,
       createdAt: createdAt ?? this.createdAt,
       completedAt: completedAt ?? this.completedAt,
@@ -61,6 +65,7 @@ class TodoItem extends Equatable {
         title,
         count,
         order,
+        originalOrder,
         isCompleted,
         createdAt,
         completedAt,
